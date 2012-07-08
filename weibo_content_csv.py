@@ -120,7 +120,7 @@ def get_statuses_data(statuses, number, uid):
             created_at = str(statuses[index].created_at)
             source = statuses[index].source
             text = str(statuses[index].text)
-            data.append((uid, gender, province, city, weibo_id, created_at, source, text))
+            data.append((weibo_id, uid, source, gender, province, city, text, created_at))
             #logging.info(str(data))
     return data
 
