@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #-*- coding=utf-8 -*-
 
+import os
 import sys
 import getopt 
 import webbrowser
@@ -15,7 +16,7 @@ DEFAULT_CITY_CODE          = 11 # beijing
 
 APP_KEY                    = 1145738428
 APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
-CALLBACK_URL               = "http://76.116.64.145:8888/callback"
+CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
 
 class Mode:
     FROM_DB     = 1
@@ -80,7 +81,10 @@ def do_auth(conn):
     client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
     url = client.get_authorize_url()   
     #urllib2.Request(url)
-    webbrowser.open(url)
+    #webbrowser.open(url)
+    command = "curl " + url
+    print command
+    os.system(command)
     # verifier = input("Verifier: ").strip()
     verifier = get_code(conn)
     #client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
