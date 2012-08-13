@@ -3,12 +3,12 @@
 
 import os
 import sys
-import getopt 
+import getopt
 import webbrowser
 import MySQLdb
 import time
 import weibo
-import urllib2 
+import urllib2
 
 DEFAULT_FETCH_USERS_NUMBER = 10
 DEFAULT_ONE_PAGE_COUNT     = 10
@@ -25,7 +25,7 @@ class Mode:
 
 # global vars:
 g_city_code          = DEFAULT_CITY_CODE
-g_one_page_count     = DEFAULT_ONE_PAGE_COUNT 
+g_one_page_count     = DEFAULT_ONE_PAGE_COUNT
 g_fetch_users_number = DEFAULT_FETCH_USERS_NUMBER
 g_stored_counter     = 0
 g_mode               = Mode.FROM_DB
@@ -74,12 +74,35 @@ def get_code(conn):
         time.sleep(5)
 
 
+def get_codes(conn):
+    cursor = conn.cursor()
+    sql = "select verifier from code where is_valid=1"
+    n = cursor.execute(sql)
+    if (n > 0):
+        logging.info("Get %s codes" % n)
+        codes = cursor.fetchall()
+        print (codes)
+        return codes
+    else:
+        return False
+
+
+def set_invalid(conn, verifier):
+    cursor = conn.cursor()
+    sql = "update code set is_valid=0 where verifier = %s"
+    n = cursor.execute(sql, verifier)
+    if (1 == n):
+        logging.info("Set code invalid OK!")
+        return True
+    else:
+        logging.error("Set code invalid Failed!")
+        return False
 
 
 def do_auth(conn):
     logging = Logging.get_logger('do_auth')
     client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
-    url = client.get_authorize_url()   
+    url = client.get_authorize_url()
     #urllib2.Request(url)
     #webbrowser.open(url)
     command = "curl " + url
@@ -88,11 +111,45 @@ def do_auth(conn):
     # verifier = input("Verifier: ").strip()
     verifier = get_code(conn)
     #client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
-    ret = client.request_access_token(verifier)
-    access_token = ret.access_token 
-    expires_in = ret.expires_in 
 
-    print("access_token = %s    expires_in = %s " %( access_token, expires_in))
+    # codes = get_codes(conn)
+    # verified_flag = False
+    # for c in codes:
+    #     try:
+    #         ret = client.request_access_token(c)
+    #     except weibo.APIError as apierr:
+    #         logging.error(str(apierr))
+    #         logging.error(" <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>  Incorrect Verifier Code!  <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>> ")
+    #         continue
+    #     else:
+    #         logging.info("----------=============--  Correct Verifier Code!  --================----------------")
+    #         verifier = c
+    #         verified_flag = True
+    #         break
+
+    # if (False == verified_flag):
+    #     logging.error("There is no correct verifier code so far.")
+    #     sys.exit(1)
+    # else:
+    #     if not set_invalid(conn, verifier)
+    #         logging.error("Error Occured when set the invalid flag for verifier code")
+    #         sys.exit(1)
+    #     else:
+    #         logging.info("Set the invalid flag for verifier code successfully!")
+
+    try:
+        ret = client.request_access_token(verifier)
+    except weibo.APIError as apierr:
+        logging.error(str(apierr))
+        logging.error(" <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>  Incorrect Verifier Code!  <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>> ")
+        sys.exit(1)
+    else:
+        logging.info("----------=============--  Correct Verifier Code!  --================----------------")
+
+    access_token = ret.access_token
+    expires_in = ret.expires_in
+
+    print("access_token = %s    expires_in = %s " %(access_token, expires_in))
 
     client.set_access_token(access_token, expires_in)
     # u = client.get.statuses__friends_timeline(count=1)
@@ -293,12 +350,30 @@ def store_one_user_bilaterals(conn, bilaterals):
     return True
 
 
+def set_selected(cursor, uids):
+    logging = Logging.get_logger('set_selected')
+    sql = "update users set selected='T' where uid in (%s)"
+    str = ""
+    for u in uids:
+        str += str(u[0]) + ", "
+    uid_set = rstrip(',')
+    logging.info("All uids: " + uid_set)
+    n = cursor.execute(sql, uid_set)
+    if (len(uids) == n):
+        logging.info("Set Selected Flag Successfully!")
+        return True
+    else:
+        logging.error("Set Selected Flag False!")
+        return False
+
 
 def fetch_users(conn):
     logging = Logging.get_logger('fetch_users')
     if (Mode.FROM_DB == g_mode):
         logging.info("DB MODE!!! ")
-        sql = "select uid from users where extended='F' limit %s"
+        lock_sql = "lock table users write;"
+        sql_fetch = "select uid from users where extended='F' and selected='F' limit %s"
+        unlock_sql = "unlock tables;"
         param = int(g_fetch_users_number)
     elif (Mode.FROM_NAME == g_mode):
         return [(g_name,)]
@@ -309,33 +384,48 @@ def fetch_users(conn):
         logging.info("MODE IS NOT EXIST!!! ====================<><><><><><><><><><>==================== ")
         return False
     cursor = conn.cursor()
+    cursor.execute(lock_sql)
     n = cursor.execute(sql, param)
     if (Mode.FROM_DB == g_mode and g_fetch_users_number == n):
         logging.info("Fetch %d users Successfully" % n)
         uids = cursor.fetchall()
-        cursor.close()
-        logging.info("To Process Users: " + str(uids))
-        return uids
+        if not set_selected(cursor, uids):
+            cursor.execute(unlock_sql)
+            cursor.close()
+            return False
+        else:
+            cursor.execute(unlock_sql)
+            cursor.close()
+            logging.info("To Process Users: " + str(uids))
+            return uids
     elif (Mode.FROM_DB == g_mode and n >= 0):
         logging.info("There is less than %d users, Fetched %d users Successfully" % (g_fetch_users_number, n))
         uids = cursor.fetchall()
-        cursor.close()
-        return uids
-    elif (Mode.FROM_NAME == g_mode and 1 == n):
-        logging.info("Fetched user: %s Successfully!" % g_name)
-        uid = cursor.fetchone()
-        logging.info("name: %s    uid: %s" % (g_name, str(uid)))
-        cursor.close()
-        return [uid]
+        if not set_selected(cursor, uids):
+            cursor.execute(unlock_sql)
+            cursor.close()
+            return False
+        else:
+            cursor.execute(unlock_sql)
+            cursor.close()
+            return uids
+    # elif (Mode.FROM_NAME == g_mode and 1 == n):
+    #     logging.info("Fetched user: %s Successfully!" % g_name)
+    #     uid = cursor.fetchone()
+    #     logging.info("name: %s    uid: %s" % (g_name, str(uid)))
+    #     cursor.close()
+    #     return [uid]
     elif (0 == n):
         logging.warning("NO SUCH USER in DB!")
+        cursor.execute(unlock_sql)
         cursor.close()
         return False
     else:
         logging.error("Database Operation ERROR!! n = %d" % n)
+        cursor.execute(unlock_sql)
         cursor.close()
         return False
-        
+
 
 def fetch_store_one_user_bilaterals(conn, api, uid):
     logging = Logging.get_logger('fetch_store_one_user_bilaterals')
@@ -396,8 +486,6 @@ def fetch_bilaterals_to_database(conn):
         return False
 
 
-
-
 def main():
     global g_city_code, g_one_page_count, g_fetch_users_number, g_mode, g_name
     logging = Logging.get_logger('main')
@@ -414,8 +502,8 @@ def main():
                 g_name = str(value)
                 logging(g_name)
                 g_mode = Mode.FROM_NAME
-        print(opts)  
-        print(args) 
+        print(opts)
+        print(args)
     except getopt.GetoptError:
         logging.error("Params are not defined well!")
         logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
