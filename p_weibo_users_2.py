@@ -14,9 +14,9 @@ DEFAULT_FETCH_USERS_NUMBER = 10
 DEFAULT_ONE_PAGE_COUNT     = 10
 DEFAULT_CITY_CODE          = 11 # beijing
 
-APP_KEY                    = 1145738428
-APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
-CALLBACK_URL               = "http://76.116.64.145:8888/callback"
+APP_KEY                    = 3983759328
+APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
+CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
 
 class Mode:
     FROM_DB     = 1
@@ -76,6 +76,7 @@ class Logging:
 
 def get_codes(conn):
     logging = Logging.get_logger('get_codes')
+    logging.info(" HERE ")
     cursor = conn.cursor()
     sql = "select verifier from code where is_valid=1"
     n = cursor.execute(sql)
@@ -93,6 +94,7 @@ def get_codes(conn):
 
 def set_invalid(conn, verifier):
     logging = Logging.get_logger('set_invalid')
+    logging.info(" HERE ")
     cursor = conn.cursor()
     sql = "update code set is_valid=0 where verifier = %s"
     n = cursor.execute(sql, verifier)
