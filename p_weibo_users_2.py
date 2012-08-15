@@ -116,7 +116,11 @@ def do_auth(conn):
     # verifier = get_code(conn)
     #client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
 
-    codes = get_codes(conn)
+    codes = False
+    while (False == codes):
+        time.sleep(2)
+        codes = get_codes(conn)
+
     verified_flag = False
     for c in codes:
         try:
@@ -343,7 +347,6 @@ def store_one_user_bilaterals(conn, bilaterals):
 def set_selected(cursor, uids):
     logging = Logging.get_logger('set_selected')
     sql = "update users set selected='T' where uid in"
-    ss = "update users set province='beijing' where uid in (1596901790,1865168580,2495798711,1945974740,2037522363,1593829637,1709252942,1798505301,1661147634,1903369197);"
     all_uid = '('
     for u in uids:
         all_uid += str(u[0]) + ','
@@ -352,7 +355,6 @@ def set_selected(cursor, uids):
     logging.info("All uids: " + uid_set)
     sql += uid_set
     n = cursor.execute(sql)
-    # n = cursor.execute(ss)
     logging.info(sql)
     logging.info("len(uids) = %s, n = %s" % (len(uids), n))
     if (len(uids) == n):
