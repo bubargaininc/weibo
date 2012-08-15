@@ -31,9 +31,9 @@ g_statuses.append("推荐您来看看哦")
 g_statuses.append("现在购票有优惠，详情咨询@盟邦戏剧")
 g_statuses.append("抢票进行中")
 g_statuses.append("转发送票喽")
-g_mid      = "3477508185559573"
+g_mid      = "3477166051980538"
 g_sent_out = 0
-g_group_number = 5
+g_group_number = 3
 
 class Logging:
     func_name = ''
@@ -121,7 +121,7 @@ def do_auth(conn):
 def get_users(conn):
     logging = Logging.get_logger('get_users')
     cursor = conn.cursor()
-    sql = "select nick_name from spider.users where province='北京' and description like '%时尚%' or description like '%戏剧%' or career like '时尚' or career like '戏剧';"
+    sql = "select nick_name from spider.users where province='北京' and description like '%时尚%' or description like '%戏剧%' or career like '时尚' or career like '戏剧' order by id desc limit 1000;"
     n = cursor.execute(sql)
     logging.info("Find %s users in total..." % n)
     nick_names = cursor.fetchall()
@@ -131,7 +131,7 @@ def get_users(conn):
     return nick_names
 
 
-def repost(nick_names):
+def repost(api, nick_names):
     global g_sent_out, g_statuses, g_mid
     logging = Logging.get_logger('repost')
     try:
@@ -146,14 +146,32 @@ def repost(nick_names):
                 logging.info("counter = " + str(counter))
                 status = g_statuses[g_sent_out%g_group_number]
                 for i in range (0, g_group_number):
-                    status += ", @" + nick_names[counter+i][0]
+                    status += " @" + nick_names[counter+i][0]
                 logging.info(str(g_sent_out) + " ==> " + status)
+                if not api.is_expires():
+                    try:
+                        api.post.statuses__repost(id=g_mid, status=status)
+                    except weibo.APIError as apierr:
+                        logging.error(str(apierr))
+                        logging.info("Repost " + str(g_sent_out-1) + " Statuses In Total!")
+                        sys.exit(1)
                 counter += g_group_number
+                logging.info("I am waiting for the next call...")
+                time.sleep(10*60)
             else:
+                logging.info("I am waiting for the next call...")
+                time.sleep(10*60)
                 break
         status = g_statuses[g_sent_out%g_group_number]
         for i in range (counter, len(nick_names)):
-            status += ", @" + nick_names[i][0]
+            status += " @" + nick_names[i][0]
+        if not api.is_expires():
+            try:
+                api.post.statuses__repost(id=g_mid, status=status)
+            except weibo.APIError as apierr:
+                logging.error(str(apierr))
+                logging.info("Repost " + str(g_sent_out) + " Statuses In Total!")
+                sys.exit(1)
         g_sent_out += 1
         logging.info(str(g_sent_out) + " ==> " + status)
         logging.info(status)
@@ -177,7 +195,7 @@ def main():
     nick_names = get_users(conn)
     conn.close()
     logging.info("Start to repost statuses as bubargain@gmail.com")
-    repost(nick_names)
+    repost(api, nick_names)
     logging.info("Repost " + str(g_sent_out) + " Statuses In Total!")
     logging.info(" ---> END")
 
