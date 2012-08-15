@@ -16,7 +16,7 @@ DEFAULT_CITY_CODE          = 11 # beijing
 
 APP_KEY                    = 1145738428
 APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
-CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
+CALLBACK_URL               = "http://76.116.64.145:8888/callback"
 
 class Mode:
     FROM_DB     = 1
@@ -58,36 +58,41 @@ class Logging:
 
 
 
-def get_code(conn):
-    cursor = conn.cursor()
-    sql = "select verifier, is_valid from code where id = 1"
-    while (1):
-        n = cursor.execute(sql)
-        res = cursor.fetchall()
-        print (res)
-        if (1 == int(res[0][1])):
-            sql = "update code set is_valid = 0 where id = 1"
-            n = cursor.execute(sql)
-            cursor.close()
-            print("The code is: %s" % str(res[0][0]))
-            return res[0][0]
-        time.sleep(5)
+# def get_code(conn):
+#     cursor = conn.cursor()
+#     sql = "select verifier, is_valid from code where id = 1"
+#     while (1):
+#         n = cursor.execute(sql)
+#         res = cursor.fetchall()
+#         print (res)
+#         if (1 == int(res[0][1])):
+#             sql = "update code set is_valid = 0 where id = 1"
+#             n = cursor.execute(sql)
+#             cursor.close()
+#             print("The code is: %s" % str(res[0][0]))
+#             return res[0][0]
+#         time.sleep(5)
 
 
 def get_codes(conn):
+    logging = Logging.get_logger('get_codes')
     cursor = conn.cursor()
     sql = "select verifier from code where is_valid=1"
     n = cursor.execute(sql)
     if (n > 0):
         logging.info("Get %s codes" % n)
-        codes = cursor.fetchall()
-        print (codes)
+        res = cursor.fetchall()
+        logging.info(str(res))
+        codes = []
+        for code in res:
+            codes.append(code[0])
+        logging.info(str(codes))
         return codes
     else:
         return False
 
-
 def set_invalid(conn, verifier):
+    logging = Logging.get_logger('set_invalid')
     cursor = conn.cursor()
     sql = "update code set is_valid=0 where verifier = %s"
     n = cursor.execute(sql, verifier)
@@ -98,66 +103,55 @@ def set_invalid(conn, verifier):
         logging.error("Set code invalid Failed!")
         return False
 
-
 def do_auth(conn):
     logging = Logging.get_logger('do_auth')
     client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
     url = client.get_authorize_url()
-    #urllib2.Request(url)
-    #webbrowser.open(url)
-    command = "curl " + url
-    print command
-    os.system(command)
+    webbrowser.open(url)
+    time.sleep(2)
+    # command = "curl " + url
+    # print command
+    # os.system(command)
     # verifier = input("Verifier: ").strip()
-    verifier = get_code(conn)
+    # verifier = get_code(conn)
     #client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
 
-    # codes = get_codes(conn)
-    # verified_flag = False
-    # for c in codes:
-    #     try:
-    #         ret = client.request_access_token(c)
-    #     except weibo.APIError as apierr:
-    #         logging.error(str(apierr))
-    #         logging.error(" <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>  Incorrect Verifier Code!  <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>> ")
-    #         continue
-    #     else:
-    #         logging.info("----------=============--  Correct Verifier Code!  --================----------------")
-    #         verifier = c
-    #         verified_flag = True
-    #         break
+    codes = False
+    while (False == codes):
+        time.sleep(2)
+        codes = get_codes(conn)
 
-    # if (False == verified_flag):
-    #     logging.error("There is no correct verifier code so far.")
-    #     sys.exit(1)
-    # else:
-    #     if not set_invalid(conn, verifier)
-    #         logging.error("Error Occured when set the invalid flag for verifier code")
-    #         sys.exit(1)
-    #     else:
-    #         logging.info("Set the invalid flag for verifier code successfully!")
+    verified_flag = False
+    for c in codes:
+        try:
+            logging.info("Current code is: " + str(c))
+            ret = client.request_access_token(c)
+        except urllib2.HTTPError as httperr:
+            logging.error(str(httperr))
+            logging.error(" <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>  Incorrect Verifier Code!  <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>> ")
+            continue
+        else:
+            logging.info("----------=============--  Correct Verifier Code!  --================----------------")
+            verifier = c
+            verified_flag = True
+            break
 
-    try:
-        ret = client.request_access_token(verifier)
-    except weibo.APIError as apierr:
-        logging.error(str(apierr))
-        logging.error(" <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>  Incorrect Verifier Code!  <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>> ")
+    if (False == verified_flag):
+        logging.error("There is no correct verifier code so far.")
         sys.exit(1)
     else:
-        logging.info("----------=============--  Correct Verifier Code!  --================----------------")
+        if not set_invalid(conn, verifier):
+            logging.error("Error Occured when set the invalid flag for verifier code")
+            sys.exit(1)
+        else:
+            logging.info("Set the invalid flag for verifier code successfully!")
 
     access_token = ret.access_token
     expires_in = ret.expires_in
 
-    print("access_token = %s    expires_in = %s " %(access_token, expires_in))
+    logging.info("access_token = %s    expires_in = %s " %(access_token, expires_in))
 
     client.set_access_token(access_token, expires_in)
-    # u = client.get.statuses__friends_timeline(count=1)
-    # print u
-    # print u.total_number
-    # print u.statuses
-    # print u.statuses[0].user.id
-    # print u.statuses[0].user.screen_name
     if not client.is_expires():
         try:
             uid = client.get.account__get_uid().uid
@@ -352,13 +346,17 @@ def store_one_user_bilaterals(conn, bilaterals):
 
 def set_selected(cursor, uids):
     logging = Logging.get_logger('set_selected')
-    sql = "update users set selected='T' where uid in (%s)"
-    str = ""
+    sql = "update users set selected='T' where uid in"
+    all_uid = '('
     for u in uids:
-        str += str(u[0]) + ", "
-    uid_set = rstrip(',')
+        all_uid += str(u[0]) + ','
+    uid_set = all_uid.rstrip(',')
+    uid_set += ');'
     logging.info("All uids: " + uid_set)
-    n = cursor.execute(sql, uid_set)
+    sql += uid_set
+    n = cursor.execute(sql)
+    logging.info(sql)
+    logging.info("len(uids) = %s, n = %s" % (len(uids), n))
     if (len(uids) == n):
         logging.info("Set Selected Flag Successfully!")
         return True
@@ -385,7 +383,7 @@ def fetch_users(conn):
         return False
     cursor = conn.cursor()
     cursor.execute(lock_sql)
-    n = cursor.execute(sql, param)
+    n = cursor.execute(sql_fetch, param)
     if (Mode.FROM_DB == g_mode and g_fetch_users_number == n):
         logging.info("Fetch %d users Successfully" % n)
         uids = cursor.fetchall()

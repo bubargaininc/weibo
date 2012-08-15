@@ -15,13 +15,11 @@ def fetch(request):
 	code = str(request.GET.get('code'))
 	print ("code = %s " % code)
 	conn = MySQLdb.connect(host="localhost", user="root", passwd="RooT", db="spider", charset="utf8")
-	print "1"
 	cursor = conn.cursor()
-	print "2"
-	sql = "update code set verifier=%s, is_valid=1 where id=1"
-	print ("sql = %s" % sql)
-	param = code
-	n = cursor.execute(sql, param)
+	sql_clear = "delete from code where is_valid = 0;"
+	sql_add = "insert into code (verifier, is_valid) value(%s, 1)"
+	cursor.execute(sql_clear)
+	n = cursor.execute(sql_add, code)
 	print("n = %s" % n)
 	cursor.close()
 	conn.close()

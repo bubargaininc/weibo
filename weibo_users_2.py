@@ -14,8 +14,8 @@ DEFAULT_FETCH_USERS_NUMBER = 10
 DEFAULT_ONE_PAGE_COUNT     = 10
 DEFAULT_CITY_CODE          = 11 # beijing
 
-APP_KEY                    = 1145738428
-APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
+APP_KEY                    = 3983759328
+APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
 CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
 
 class Mode:
@@ -81,10 +81,10 @@ def do_auth(conn):
     client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
     url = client.get_authorize_url()   
     #urllib2.Request(url)
-    #webbrowser.open(url)
-    command = "curl " + url
-    print command
-    os.system(command)
+    webbrowser.open(url)
+    #command = "curl " + url
+    #print command
+    #os.system(command)
     # verifier = input("Verifier: ").strip()
     verifier = get_code(conn)
     #client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
