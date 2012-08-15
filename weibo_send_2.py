@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
+#-*- coding=utf-8 -*-
 
 import sys
 import getopt 
@@ -20,7 +20,7 @@ db_database = "spider"
 
 APP_KEY                    = 3983759328
 APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
-CALLBACK_URL               = "http://76.116.64.145:8888/callback"
+CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
 
 
 #status                     = " 1）有没有兴趣来看下 2）推荐您来看看哦  3）现在购票有优惠，详情咨询@盟邦戏剧  4）抢票进行中 5）转发送票喽"
@@ -125,8 +125,8 @@ def get_users(conn):
     n = cursor.execute(sql)
     logging.info("Find %s users in total..." % n)
     nick_names = cursor.fetchall()
-    logging.info("All Nick Names are: ")
-    print(nick_names)
+    #logging.info("All Nick Names are: ")
+    #print(nick_names)
     cursor.close()
     return nick_names
 
@@ -153,7 +153,7 @@ def repost(nick_names):
                 break
         status = g_statuses[g_sent_out%g_group_number]
         for i in range (counter, len(nick_names)):
-            status += ", @" + nick_names[i][0]
+            status += " @" + nick_names[i][0]
         g_sent_out += 1
         logging.info(str(g_sent_out) + " ==> " + status)
         logging.info(status)
