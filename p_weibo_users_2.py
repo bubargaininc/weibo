@@ -239,41 +239,76 @@ def fetch_one_user_bilaterals(api, _uid):
     return all_bilaterals
 
 
+
 def get_bilaterals_data(bilaterals, number):
     logging = Logging.get_logger('get_bilaterals_data')
     data = []
     for index in range(0, number):
-        #logging.info("province = %s" % bilaterals.users[index]['province'])
-        if (bilaterals.users[index]['province'] == str(g_city_code)):
-            uid = bilaterals.users[index]['id']
-            #logging.info("current uid = %s " % str(uid))
-            name = bilaterals.users[index]['name']
-            if ('' == name or None == name):
-                continue
-            description = bilaterals.users[index]['description']
-            #logging.info(description)
-            url = bilaterals.users[index]['url']
-            gender = bilaterals.users[index]['gender']
-            if ('m' == gender):
-                gender = 'male'
-            else:
-                gender = 'female'
-            location = bilaterals.users[index]['location']
-            loc = location.split(' ')
-            if (2 == len(loc)):
-                province = loc[0]
-                city = loc[1]
-            elif (1 == len(loc)):
-                province = loc[0]
-                city = ''
-            else:
-                logging.info("location info error!!")
-            #logging.info("uid = %s    name = %s   description = %s  url = %s  gender = %s  province=%s  city=%s" % (uid, name,description,url,gender,province,city))
-            data.append((uid, name, gender, province, city, url, description))
-            #logging.info(data)
+        uid = bilaterals.users[index]['id']
+        #logging.info("current uid = %s " % str(uid))
+        name = bilaterals.users[index]['name']
+        if ('' == name or None == name):
+            continue
+        description = bilaterals.users[index]['description']
+        #logging.info(description)
+        url = bilaterals.users[index]['url']
+        gender = bilaterals.users[index]['gender']
+        if ('m' == gender):
+            gender = 'male'
+        else:
+            gender = 'female'
+        location = bilaterals.users[index]['location']
+        loc = location.split(' ')
+        if (2 == len(loc)):
+            province = loc[0]
+            city = loc[1]
+        elif (1 == len(loc)):
+            province = loc[0]
+            city = ''
+        else:
+            logging.info("location info error!!")
+        #logging.info("uid = %s    name = %s   description = %s  url = %s  gender = %s  province=%s  city=%s" % (uid, name,description,url,gender,province,city))
+        data.append((uid, name, gender, province, city, url, description))
+        #logging.info(data)
     #logging.info("Get bilaterals data OK!! ====----====---->>> data: %s" % data)
     #logging.info("Get bilaterals data OK!! ")
     return data
+
+# def get_bilaterals_data(bilaterals, number):
+#     logging = Logging.get_logger('get_bilaterals_data')
+#     data = []
+#     for index in range(0, number):
+#         #logging.info("province = %s" % bilaterals.users[index]['province'])
+#         if (bilaterals.users[index]['province'] == str(g_city_code)):
+#             uid = bilaterals.users[index]['id']
+#             #logging.info("current uid = %s " % str(uid))
+#             name = bilaterals.users[index]['name']
+#             if ('' == name or None == name):
+#                 continue
+#             description = bilaterals.users[index]['description']
+#             #logging.info(description)
+#             url = bilaterals.users[index]['url']
+#             gender = bilaterals.users[index]['gender']
+#             if ('m' == gender):
+#                 gender = 'male'
+#             else:
+#                 gender = 'female'
+#             location = bilaterals.users[index]['location']
+#             loc = location.split(' ')
+#             if (2 == len(loc)):
+#                 province = loc[0]
+#                 city = loc[1]
+#             elif (1 == len(loc)):
+#                 province = loc[0]
+#                 city = ''
+#             else:
+#                 logging.info("location info error!!")
+#             #logging.info("uid = %s    name = %s   description = %s  url = %s  gender = %s  province=%s  city=%s" % (uid, name,description,url,gender,province,city))
+#             data.append((uid, name, gender, province, city, url, description))
+#             #logging.info(data)
+#     #logging.info("Get bilaterals data OK!! ====----====---->>> data: %s" % data)
+#     #logging.info("Get bilaterals data OK!! ")
+#     return data
 
 
 def is_exist(conn, uid):
@@ -428,6 +463,7 @@ def fetch_users(conn):
 def fetch_store_one_user_bilaterals(conn, api, uid):
     logging = Logging.get_logger('fetch_store_one_user_bilaterals')
     fetch_result = fetch_one_user_bilaterals(api, uid)
+    time.sleep(1)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
         logging.error("ERROR Occured when fetching bilaterals!")
