@@ -14,9 +14,9 @@ DEFAULT_FETCH_USERS_NUMBER = 10
 DEFAULT_ONE_PAGE_COUNT     = 10
 DEFAULT_CITY_CODE          = 11 # beijing
 
-APP_KEY                    = 3983759328
-APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
-CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
+APP_KEY                    = 1145738428
+APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
+CALLBACK_URL               = "http://76.116.64.145:8888/callback"
 
 class Mode:
     FROM_DB     = 1
@@ -241,6 +241,17 @@ def fetch_one_user_bilaterals(api, _uid):
     return all_bilaterals
 
 
+def set_boolean(value):
+    if ("true" == value):
+        return "T"
+    else:
+        return "F"
+
+# uid, nick_name, gender, province, city, url, description, 
+# followers_count, friends_count, statuses_count, 
+# favourites_count, created_at, allow_all_act_msg, 
+# geo_enabled, verified, allow_all_comment, verified_reason, 
+# bi_followers_count
 
 def get_bilaterals_data(bilaterals, number):
     logging = Logging.get_logger('get_bilaterals_data')
@@ -269,48 +280,46 @@ def get_bilaterals_data(bilaterals, number):
             city = ''
         else:
             logging.info("location info error!!")
+
+        followers_count    = bilaterals.users[index]['followers_count']
+        followers_count    = str(followers_count)
+        friends_count      = bilaterals.users[index]['friends_count']
+        friends_count      = str(friends_count)
+        statuses_count     = bilaterals.users[index]['statuses_count']
+        statuses_count     = str(statuses_count)
+        favourites_count   = bilaterals.users[index]['favourites_count']
+        favourites_count   = str(favourites_count)
+        created_at         = bilaterals.users[index]['created_at']
+        allow_all_act_msg  = bilaterals.users[index]['allow_all_act_msg']
+        allow_all_act_msg  = set_boolean(allow_all_act_msg)
+        geo_enabled        = bilaterals.users[index]['geo_enabled']
+        geo_enabled        = set_boolean(geo_enabled)
+        verified           = bilaterals.users[index]['verified']
+        verified           = set_boolean(verified)
+        allow_all_comment  = bilaterals.users[index]['allow_all_comment']
+        allow_all_comment  = set_boolean(allow_all_comment)
+        verified_reason    = bilaterals.users[index]['verified_reason']
+        bi_followers_count = bilaterals.users[index]['bi_followers_count']
+        bi_followers_count = str(bi_followers_count)
+
+        logging.info("followers_count    = " + followers_count)
+        logging.info("friends_count      = " + friends_count)
+        logging.info("statuses_count     = " + statuses_count)
+        logging.info("favourites_count   = " + favourites_count)
+        logging.info("created_at         = " + created_at)
+        logging.info("allow_all_act_msg  = " + allow_all_act_msg)
+        logging.info("geo_enabled        = " + geo_enabled)
+        logging.info("verified           = " + verified)
+        logging.info("allow_all_comment  = " + allow_all_comment)
+        logging.info("verified_reason    = " + verified_reason)
+        logging.info("bi_followers_count = " + bi_followers_count)
+
         #logging.info("uid = %s    name = %s   description = %s  url = %s  gender = %s  province=%s  city=%s" % (uid, name,description,url,gender,province,city))
-        data.append((uid, name, gender, province, city, url, description))
+        data.append((uid,name,gender,province,city,url,description,followers_count,friends_count,statuses_count,favourites_count,created_at,allow_all_act_msg,geo_enabled,verified,allow_all_comment,verified_reason,bi_followers_count))
         #logging.info(data)
     #logging.info("Get bilaterals data OK!! ====----====---->>> data: %s" % data)
     #logging.info("Get bilaterals data OK!! ")
     return data
-
-# def get_bilaterals_data(bilaterals, number):
-#     logging = Logging.get_logger('get_bilaterals_data')
-#     data = []
-#     for index in range(0, number):
-#         #logging.info("province = %s" % bilaterals.users[index]['province'])
-#         if (bilaterals.users[index]['province'] == str(g_city_code)):
-#             uid = bilaterals.users[index]['id']
-#             #logging.info("current uid = %s " % str(uid))
-#             name = bilaterals.users[index]['name']
-#             if ('' == name or None == name):
-#                 continue
-#             description = bilaterals.users[index]['description']
-#             #logging.info(description)
-#             url = bilaterals.users[index]['url']
-#             gender = bilaterals.users[index]['gender']
-#             if ('m' == gender):
-#                 gender = 'male'
-#             else:
-#                 gender = 'female'
-#             location = bilaterals.users[index]['location']
-#             loc = location.split(' ')
-#             if (2 == len(loc)):
-#                 province = loc[0]
-#                 city = loc[1]
-#             elif (1 == len(loc)):
-#                 province = loc[0]
-#                 city = ''
-#             else:
-#                 logging.info("location info error!!")
-#             #logging.info("uid = %s    name = %s   description = %s  url = %s  gender = %s  province=%s  city=%s" % (uid, name,description,url,gender,province,city))
-#             data.append((uid, name, gender, province, city, url, description))
-#             #logging.info(data)
-#     #logging.info("Get bilaterals data OK!! ====----====---->>> data: %s" % data)
-#     #logging.info("Get bilaterals data OK!! ")
-#     return data
 
 
 def is_exist(conn, uid):
@@ -356,7 +365,7 @@ def store_one_user_bilaterals(conn, bilaterals):
     logging = Logging.get_logger('store_one_user_bilaterals')
     cursor = conn.cursor()
     #sql = "insert into temp_users (uid, nick_name) values(%s,%s)"
-    sql = "insert into users (uid, nick_name, gender, province, city, url, description) values(%s,%s,%s,%s,%s,%s,%s)"
+    sql = "insert into users (uid, nick_name, gender, province, city, url, description, followers_count, friends_count, statuses_count, favourites_count, created_at, allow_all_act_msg, geo_enabled, verified, allow_all_comment, verified_reason, bi_followers_count) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     logging.info("Storing ...")
     for b in bilaterals:
         #logging.info("one of them b: " + str(b))
