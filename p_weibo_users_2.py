@@ -242,7 +242,10 @@ def fetch_one_user_bilaterals(api, _uid):
 
 
 def set_boolean(value):
-    if ("true" == value):
+    # print "+++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    # print value
+    # print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    if (True == value):
         return "T"
     else:
         return "F"
