@@ -111,9 +111,9 @@ def do_auth(conn):
     url = client.get_authorize_url()
     webbrowser.open(url)
     time.sleep(2)
-    # command = "curl " + url
-    # print command
-    # os.system(command)
+    #command = "curl " + url
+    #logging.info(command)
+    #os.system(command)
     # verifier = input("Verifier: ").strip()
     # verifier = get_code(conn)
     #client = weibo.APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
@@ -363,8 +363,8 @@ def store_one_user_bilaterals(conn, bilaterals):
         if (not is_exist(conn, b[0])):
             #logging.info("This is a new user!!!")
             param = b
-            logging.info(str(param))
-            logging.info(param[6])
+            #logging.info(str(param))
+            #logging.info(param[6])
             n = cursor.execute(sql, param)
             if (1 == n):
                 #logging.info("Store bilateral uid = %s, name= %s OK!!" % (b[0], b[1]))
@@ -392,8 +392,8 @@ def set_selected(cursor, uids):
     logging.info("All uids: " + uid_set)
     sql += uid_set
     n = cursor.execute(sql)
-    logging.info(sql)
-    logging.info("len(uids) = %s, n = %s" % (len(uids), n))
+    #logging.info(sql)
+    #logging.info("len(uids) = %s, n = %s" % (len(uids), n))
     if (len(uids) == n):
         logging.info("Set Selected Flag Successfully!")
         return True
@@ -465,7 +465,7 @@ def fetch_users(conn):
 def fetch_store_one_user_bilaterals(conn, api, uid):
     logging = Logging.get_logger('fetch_store_one_user_bilaterals')
     fetch_result = fetch_one_user_bilaterals(api, uid)
-    time.sleep(1)
+    time.sleep(5)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
         logging.error("ERROR Occured when fetching bilaterals!")
