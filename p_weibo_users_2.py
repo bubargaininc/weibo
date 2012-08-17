@@ -137,30 +137,36 @@ def do_auth(conn):
     logging.info("access_token = %s    expires_in = %s " %(access_token, expires_in))
 
     client.set_access_token(access_token, expires_in)
-    if not client.is_expires():
+    while not client.is_expires():
         try:
             uid = client.get.account__get_uid().uid
         except weibo.APIError as apierr:
             logging.error(str(apierr))
-            logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
-            time.sleep(150)
+            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            time.sleep(300)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
-            logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
-            time.sleep(150)
+            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            time.sleep(300)
+        else:
+            break
         logging.info("uid = %s " % uid)
+    while not client.is_expires():
         try:
             u = client.get.users__show(uid=uid)
         except weibo.APIError as apierr:
             logging.error(str(apierr))
+            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            time.sleep(300)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
-            logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
-            sys.exit(1)
-        #logging.info(str(u))
-        logging.info("We are uing API from account: [uid = %s, name = %s]" % (u.id, u.screen_name))
+            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            time.sleep(300)
+        else:
+            logging.info("We are uing API from account: [uid = %s, name = %s]" % (u.id, u.screen_name))
+            break
     return client
 
 
