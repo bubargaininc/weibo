@@ -182,14 +182,19 @@ def fetch_one_user_bilaterals(api, _uid):
         except weibo.APIError as apierr:
             logging.error(str(apierr))
             logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
-            sleep(300)
+            time.sleep(300)
             # sys.exit(1)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
             logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
-            sleep(300)
+            time.sleep(300)
             # sys.exit(1)
+        except urllib2.URLError as urlerr:
+            logging.error(str(urlerr))
+            logging.error(str(urlerr.read()))
+            logging.info("I am tired, I am sleeping during the next 5 minutes...")
+            time.sleep(300)
         else:
             break
 
@@ -204,12 +209,17 @@ def fetch_one_user_bilaterals(api, _uid):
             except weibo.APIError as apierr:
                 logging.error(str(apierr))
                 logging.info("I am tired, I am sleeping during the next 5 minutes...")
-                sleep(300)
+                time.sleep(300)
             except urllib2.HTTPError as httperr:
                 logging.error(str(httperr))
                 logging.error(str(httperr.read()))
                 logging.info("I am tired, I am sleeping during the next 5 minutes...")
-                sleep(300)
+                time.sleep(300)
+            except urllib2.URLError as urlerr:
+                logging.error(str(urlerr))
+                logging.error(str(urlerr.read()))
+                logging.info("I am tired, I am sleeping during the next 5 minutes...")
+                time.sleep(300)
             else:
                 break
         # bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
@@ -245,9 +255,9 @@ def get_bilaterals_data(bilaterals, number):
         url = bilaterals.users[index]['url']
         gender = bilaterals.users[index]['gender']
         if ('m' == gender):
-            gender = 'male'
+            gender = 'm'
         else:
-            gender = 'female'
+            gender = 'f'		
         location = bilaterals.users[index]['location']
         loc = location.split(' ')
         if (2 == len(loc)):
@@ -330,6 +340,7 @@ def store_one_user_bilaterals(conn, bilaterals):
     #sql = "insert into temp_users (uid, nick_name) values(%s,%s)"
     sql = "insert into users (uid, nick_name, gender, province, city, url, description, followers_count, friends_count, statuses_count, favourites_count, created_at, allow_all_act_msg, geo_enabled, verified, allow_all_comment, verified_reason, bi_followers_count) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     logging.info("Storing ...")
+    #logging.info(sql);
     for b in bilaterals:
         #logging.info("one of them b: " + str(b))
         if (not is_exist(conn, b[0])):
@@ -338,9 +349,11 @@ def store_one_user_bilaterals(conn, bilaterals):
             #logging.info(str(param))
             #logging.info(param[6])
             n = cursor.execute(sql, param)
+	    #daniel add one line here	
+	    cursor.execute("commit") 
             if (1 == n):
                 #logging.info("Store bilateral uid = %s, name= %s OK!!" % (b[0], b[1]))
-                g_stored_counter += 1
+                g_stored_counter += 1 
             else:
                 logging.error("Error Occured when store the user of uid = %s, name= %s +++=================------>>>>>>>>>>><<<<<<<<<<<------===============" % (b[0], b[1]))
                 cursor.close()
@@ -458,7 +471,7 @@ def fetch_store_one_user_bilaterals(conn, api, uid):
             logging.error("ERROR Occured when storing bilaterals!")
             return False
         else:
-            logging.info("Store bilaterals of uid: %s OK!!" % uid)
+            #logging.info("Store bilaterals of uid: %s OK!!" % uid)
             return True
 
 
