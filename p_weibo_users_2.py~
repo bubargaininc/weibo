@@ -15,7 +15,7 @@ DEFAULT_ONE_PAGE_COUNT     = 10
 DEFAULT_CITY_CODE          = 11 # beijing
 
 APP_KEY                    = 3983759328
-APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
+APP_SECRET                 = """6d1bd885bb6553c201b50fc9912b756"""
 CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
 
 class Mode:
