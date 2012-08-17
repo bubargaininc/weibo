@@ -14,9 +14,9 @@ DEFAULT_FETCH_USERS_NUMBER = 10
 DEFAULT_ONE_PAGE_COUNT     = 10
 DEFAULT_CITY_CODE          = 11 # beijing
 
-APP_KEY                    = 1145738428
-APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
-CALLBACK_URL               = "http://76.116.64.145:8888/callback"
+APP_KEY                    = 3983759328
+APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
+CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
 
 class Mode:
     FROM_DB     = 1
@@ -160,12 +160,12 @@ def do_auth(conn):
         except weibo.APIError as apierr:
             logging.error(str(apierr))
             logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
-            sys.exit(1)
+            time.sleep(150)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
             logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
-            sys.exit(1)
+            time.sleep(150)
         logging.info("uid = %s " % uid)
         try:
             u = client.get.users__show(uid=uid)
@@ -209,12 +209,12 @@ def fetch_one_user_bilaterals(api, _uid):
         except weibo.APIError as apierr:
             logging.error(str(apierr))
             logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
-            sys.exit(1)
+            time.sleep(150)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
             logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
-            sys.exit(1)
+            time.sleep(150)
 
     bilaterals_number = len(bilaterals.users)
     logging.info("Get %d bilaterals this time." % bilaterals_number)
@@ -226,9 +226,11 @@ def fetch_one_user_bilaterals(api, _uid):
                 bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
             except weibo.APIError as apierr:
                 logging.error(str(apierr))
+                time.sleep(60)
             except urllib2.HTTPError as httperr:
                 logging.error(str(httperr))
                 logging.error(str(httperr.read()))
+                time.sleep(60)
         # bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
         bilaterals_number = len(bilaterals.users)
         logging.info("Get %d bilaterals this time." % bilaterals_number)
@@ -242,7 +244,7 @@ def fetch_one_user_bilaterals(api, _uid):
 
 
 def set_boolean(value):
-    if ("true" == value):
+    if (True == value):
         return "T"
     else:
         return "F"
