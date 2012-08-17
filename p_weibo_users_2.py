@@ -57,23 +57,6 @@ class Logging:
         print(Logging.timestamp() + "  ERROR  [" + self.func_name  + "]: " + content)
 
 
-
-# def get_code(conn):
-#     cursor = conn.cursor()
-#     sql = "select verifier, is_valid from code where id = 1"
-#     while (1):
-#         n = cursor.execute(sql)
-#         res = cursor.fetchall()
-#         print (res)
-#         if (1 == int(res[0][1])):
-#             sql = "update code set is_valid = 0 where id = 1"
-#             n = cursor.execute(sql)
-#             cursor.close()
-#             print("The code is: %s" % str(res[0][0]))
-#             return res[0][0]
-#         time.sleep(5)
-
-
 def get_codes(conn):
     logging = Logging.get_logger('get_codes')
     logging.info(" HERE ")
@@ -179,22 +162,6 @@ def do_auth(conn):
         #logging.info(str(u))
         logging.info("We are uing API from account: [uid = %s, name = %s]" % (u.id, u.screen_name))
     return client
-    # auth = OAuthHandler(APP_KEY, APP_SECRET, BACK_URL)
-    # auth_url = auth.get_authorization_url()
-    # request_token_key = auth.request_token.key
-    # request_token_secret = auth.request_token.secret
-    # auth.set_request_token(request_token_key, request_token_secret)
-    # webbrowser.open(auth_url)
-    # verifier = input("Verifier: ").strip()
-    # access_token = auth.get_access_token(verifier)
-    # ATK = access_token.key
-    # ATS = access_token.secret
-    # auth.setAccessToken(ATK, ATS)
-    # api = API(auth)
-    # user = api.verify_credentials()
-    # logging("[AUTH]: We are uing API from account: [uid = %s, name = %s]" % (user.id, user.screen_name))
-    # return api
-
 
 
 def fetch_one_user_bilaterals(api, _uid):
@@ -203,34 +170,42 @@ def fetch_one_user_bilaterals(api, _uid):
     page_number = 1
     #logging.info("count = %s" % g_one_page_count)
     #logging.info("page = %s" % page_number)
-    if not api.is_expires():
+    while not api.is_expires():
         try:
             bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
         except weibo.APIError as apierr:
             logging.error(str(apierr))
-            logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
-            time.sleep(150)
+            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            sleep(300)
+            # sys.exit(1)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
-            logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
-            time.sleep(150)
+            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            sleep(300)
+            # sys.exit(1)
+        else:
+            break
 
     bilaterals_number = len(bilaterals.users)
     logging.info("Get %d bilaterals this time." % bilaterals_number)
     all_bilaterals.extend(get_bilaterals_data(bilaterals, bilaterals_number))
     while (bilaterals_number > 0):
         page_number += 1
-        if not api.is_expires():
+        while not api.is_expires():
             try:
                 bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
             except weibo.APIError as apierr:
                 logging.error(str(apierr))
-                time.sleep(60)
+                logging.info("I am tired, I am sleeping during the next 5 minutes...")
+                sleep(300)
             except urllib2.HTTPError as httperr:
                 logging.error(str(httperr))
                 logging.error(str(httperr.read()))
-                time.sleep(60)
+                logging.info("I am tired, I am sleeping during the next 5 minutes...")
+                sleep(300)
+            else:
+                break
         # bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
         bilaterals_number = len(bilaterals.users)
         logging.info("Get %d bilaterals this time." % bilaterals_number)
@@ -249,11 +224,6 @@ def set_boolean(value):
     else:
         return "F"
 
-# uid, nick_name, gender, province, city, url, description, 
-# followers_count, friends_count, statuses_count, 
-# favourites_count, created_at, allow_all_act_msg, 
-# geo_enabled, verified, allow_all_comment, verified_reason, 
-# bi_followers_count
 
 def get_bilaterals_data(bilaterals, number):
     logging = Logging.get_logger('get_bilaterals_data')
@@ -303,22 +273,7 @@ def get_bilaterals_data(bilaterals, number):
         verified_reason    = bilaterals.users[index]['verified_reason']
         bi_followers_count = bilaterals.users[index]['bi_followers_count']
         bi_followers_count = str(bi_followers_count)
-
-#        logging.info("followers_count    = " + followers_count)
-#        logging.info("friends_count      = " + friends_count)
-#        logging.info("statuses_count     = " + statuses_count)
-#        logging.info("favourites_count   = " + favourites_count)
-#        logging.info("created_at         = " + created_at)
-#        logging.info("allow_all_act_msg  = " + allow_all_act_msg)
-#        logging.info("geo_enabled        = " + geo_enabled)
-#        logging.info("verified           = " + verified)
-#        logging.info("allow_all_comment  = " + allow_all_comment)
-#        logging.info("verified_reason    = " + verified_reason)
-#        logging.info("bi_followers_count = " + bi_followers_count)
-
-        #logging.info("uid = %s    name = %s   description = %s  url = %s  gender = %s  province=%s  city=%s" % (uid, name,description,url,gender,province,city))
         data.append((uid,name,gender,province,city,url,description,followers_count,friends_count,statuses_count,favourites_count,created_at,allow_all_act_msg,geo_enabled,verified,allow_all_comment,verified_reason,bi_followers_count))
-        #logging.info(data)
     #logging.info("Get bilaterals data OK!! ====----====---->>> data: %s" % data)
     #logging.info("Get bilaterals data OK!! ")
     return data
@@ -429,18 +384,24 @@ def fetch_users(conn):
     else:
         logging.info("MODE IS NOT EXIST!!! ====================<><><><><><><><><><>==================== ")
         return False
+    logging.info("Preparing Cursor...")
     cursor = conn.cursor()
+    logging.info("Ready to get the lock...")
     cursor.execute(lock_sql)
+    logging.info("Got the LOCK!!!!!!!! GREAT!!!")
     n = cursor.execute(sql_fetch, param)
+    logging.info("Fetch Users OK!")
     if (Mode.FROM_DB == g_mode and g_fetch_users_number == n):
         logging.info("Fetch %d users Successfully" % n)
         uids = cursor.fetchall()
         if not set_selected(cursor, uids):
             cursor.execute(unlock_sql)
+            logging.info("UNLOCK 1")
             cursor.close()
             return False
         else:
             cursor.execute(unlock_sql)
+            logging.info("UNLOCK 2")
             cursor.close()
             logging.info("To Process Users: " + str(uids))
             return uids
@@ -449,10 +410,12 @@ def fetch_users(conn):
         uids = cursor.fetchall()
         if not set_selected(cursor, uids):
             cursor.execute(unlock_sql)
+            logging.info("UNLOCK 3")
             cursor.close()
             return False
         else:
             cursor.execute(unlock_sql)
+            logging.info("UNLOCK 4")
             cursor.close()
             return uids
     # elif (Mode.FROM_NAME == g_mode and 1 == n):
@@ -464,11 +427,13 @@ def fetch_users(conn):
     elif (0 == n):
         logging.warning("NO SUCH USER in DB!")
         cursor.execute(unlock_sql)
+        logging.info("UNLOCK 5")
         cursor.close()
         return False
     else:
         logging.error("Database Operation ERROR!! n = %d" % n)
         cursor.execute(unlock_sql)
+        logging.info("UNLOCK 6")
         cursor.close()
         return False
 
@@ -476,7 +441,7 @@ def fetch_users(conn):
 def fetch_store_one_user_bilaterals(conn, api, uid):
     logging = Logging.get_logger('fetch_store_one_user_bilaterals')
     fetch_result = fetch_one_user_bilaterals(api, uid)
-    time.sleep(5)
+    time.sleep(4)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
         logging.error("ERROR Occured when fetching bilaterals!")
