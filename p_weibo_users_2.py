@@ -190,6 +190,11 @@ def fetch_one_user_bilaterals(api, _uid):
             logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
             time.sleep(300)
             # sys.exit(1)
+        except urllib2.URLError as urlerr:
+            logging.error(str(urlerr))
+            logging.error(str(urlerr.read()))
+            logging.info("I am tired, I am sleeping during the next 5 minutes...")
+            sleep(300)
         else:
             break
 
@@ -209,7 +214,16 @@ def fetch_one_user_bilaterals(api, _uid):
                 logging.error(str(httperr))
                 logging.error(str(httperr.read()))
                 logging.info("I am tired, I am sleeping during the next 5 minutes...")
+<<<<<<< HEAD
                 time.sleep(300)
+=======
+                sleep(300)
+            except urllib2.URLError as urlerr:
+                logging.error(str(urlerr))
+                logging.error(str(urlerr.read()))
+                logging.info("I am tired, I am sleeping during the next 5 minutes...")
+                sleep(300)
+>>>>>>> 09cf64caa5e0e29600a49e4acb1976076c18e6c9
             else:
                 break
         # bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
@@ -339,8 +353,12 @@ def store_one_user_bilaterals(conn, bilaterals):
             #logging.info(str(param))
             #logging.info(param[6])
             n = cursor.execute(sql, param)
+<<<<<<< HEAD
 	    #daniel add one line here	
 	    cursor.execute("commit") 
+=======
+            cursor.execute("commit")
+>>>>>>> 09cf64caa5e0e29600a49e4acb1976076c18e6c9
             if (1 == n):
                 #logging.info("Store bilateral uid = %s, name= %s OK!!" % (b[0], b[1]))
                 g_stored_counter += 1 
