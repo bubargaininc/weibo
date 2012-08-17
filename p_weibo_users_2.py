@@ -190,6 +190,11 @@ def fetch_one_user_bilaterals(api, _uid):
             logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
             sleep(300)
             # sys.exit(1)
+        except urllib2.URLError as urlerr:
+            logging.error(str(urlerr))
+            logging.error(str(urlerr.read()))
+            logging.info("I am tired, I am sleeping during the next 5 minutes...")
+            sleep(300)
         else:
             break
 
@@ -208,6 +213,11 @@ def fetch_one_user_bilaterals(api, _uid):
             except urllib2.HTTPError as httperr:
                 logging.error(str(httperr))
                 logging.error(str(httperr.read()))
+                logging.info("I am tired, I am sleeping during the next 5 minutes...")
+                sleep(300)
+            except urllib2.URLError as urlerr:
+                logging.error(str(urlerr))
+                logging.error(str(urlerr.read()))
                 logging.info("I am tired, I am sleeping during the next 5 minutes...")
                 sleep(300)
             else:
@@ -338,6 +348,7 @@ def store_one_user_bilaterals(conn, bilaterals):
             #logging.info(str(param))
             #logging.info(param[6])
             n = cursor.execute(sql, param)
+            cursor.execute("commit")
             if (1 == n):
                 #logging.info("Store bilateral uid = %s, name= %s OK!!" % (b[0], b[1]))
                 g_stored_counter += 1
