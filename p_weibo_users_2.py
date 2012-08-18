@@ -192,7 +192,13 @@ def fetch_one_user_bilaterals(api, _uid):
             # sys.exit(1)
         except urllib2.URLError as urlerr:
             logging.error(str(urlerr))
-            logging.error(str(urlerr.read()))
+            if hasattr(urlerr,"reason"):
+                logging.error(str(urlerr.reason))
+            elif hasattr(urlerr,"code"):
+                logging.error("Error Code:" + str(urlerr.code))
+                logging.error("Error Reason: " + str(urlerr.read()))
+            else:
+                logging.error("Unkonwn Error!!!!!")
             logging.info("I am tired, I am sleeping during the next 5 minutes...")
             time.sleep(300)
         else:
@@ -217,7 +223,13 @@ def fetch_one_user_bilaterals(api, _uid):
                 time.sleep(300)
             except urllib2.URLError as urlerr:
                 logging.error(str(urlerr))
-                logging.error(str(urlerr.read()))
+                if hasattr(urlerr,"reason"):
+                    logging.error(str(urlerr.reason))
+                elif hasattr(urlerr,"code"):
+                    logging.error("Error Code:" + str(urlerr.code))
+                    logging.error("Error Reason: " + str(urlerr.read()))
+                else:
+                    logging.error("Unkonwn Error!!!!!")
                 logging.info("I am tired, I am sleeping during the next 5 minutes...")
                 time.sleep(300)
             else:
