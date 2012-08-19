@@ -31,6 +31,7 @@ g_stored_counter     = 0
 g_mode               = Mode.FROM_DB
 g_name               = ""
 g_person_counter     = 0
+g_person_received    = 0
 
 
 class Logging:
@@ -56,6 +57,11 @@ class Logging:
     def error(self, content):
         print(Logging.timestamp() + "  ERROR  [" + self.func_name  + "]: " + content)
 
+def get_E():
+    if (g_person_received <= 0 or g_stored_counter < 0)
+        return 0
+    else:
+        return str(float(g_stored_counter)/float(g_person_received)*100) + "%"
 
 def get_codes(conn):
     logging = Logging.get_logger('get_codes')
@@ -157,12 +163,12 @@ def do_auth(conn):
             u = client.get.users__show(uid=uid)
         except weibo.APIError as apierr:
             logging.error(str(apierr))
-            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
             time.sleep(300)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
-            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
             time.sleep(300)
         else:
             logging.info("We are uing API from account: [uid = %s, name = %s]" % (u.id, u.screen_name))
@@ -171,6 +177,7 @@ def do_auth(conn):
 
 
 def fetch_one_user_bilaterals(api, _uid):
+    global g_person_received
     logging = Logging.get_logger('fetch_one_user_bilaterals')
     all_bilaterals = []
     page_number = 1
@@ -181,13 +188,13 @@ def fetch_one_user_bilaterals(api, _uid):
             bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
         except weibo.APIError as apierr:
             logging.error(str(apierr))
-            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
             time.sleep(300)
             # sys.exit(1)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
-            logging.info("So Far, ---> Stored " + str(g_stored_counter) + " New Person In Total!")
+            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
             time.sleep(300)
             # sys.exit(1)
         except urllib2.URLError as urlerr:
@@ -197,14 +204,13 @@ def fetch_one_user_bilaterals(api, _uid):
             elif hasattr(urlerr,"code"):
                 logging.error("Error Code:" + str(urlerr.code))
                 logging.error("Error Reason: " + str(urlerr.read()))
-            else:
-                logging.error("Unkonwn Error!!!!!")
             logging.info("I am tired, I am sleeping during the next 5 minutes...")
             time.sleep(300)
         else:
             break
 
     bilaterals_number = len(bilaterals.users)
+    g_person_received += bilaterals_number
     logging.info("Get %d bilaterals this time." % bilaterals_number)
     all_bilaterals.extend(get_bilaterals_data(bilaterals, bilaterals_number))
     while (bilaterals_number > 0):
@@ -228,14 +234,13 @@ def fetch_one_user_bilaterals(api, _uid):
                 elif hasattr(urlerr,"code"):
                     logging.error("Error Code:" + str(urlerr.code))
                     logging.error("Error Reason: " + str(urlerr.read()))
-                else:
-                    logging.error("Unkonwn Error!!!!!")
                 logging.info("I am tired, I am sleeping during the next 5 minutes...")
                 time.sleep(300)
             else:
                 break
         # bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
         bilaterals_number = len(bilaterals.users)
+        g_person_received += bilaterals_number
         logging.info("Get %d bilaterals this time." % bilaterals_number)
         if (0 == bilaterals_number):
             logging.info("Have got all bilaterals of the user: %s" % _uid)
@@ -325,7 +330,7 @@ def is_exist(conn, uid):
         logging.error("Error Occured when check the uid = %s in users" % uid)
         cursor.close()
         conn.close()
-        logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
+        logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
         sys.exit(1)
 
 
@@ -512,7 +517,7 @@ def fetch_bilaterals_to_database(conn):
     fetch_users_result = fetch_users(conn)
     if (False == fetch_users_result):
         logging.error("Error Occured When Fetching Users!!")
-        logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
+        logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
         sys.exit(1)
     else:
         logging.info("Fetch users OK!!")
@@ -549,14 +554,14 @@ def main():
         print(args)
     except getopt.GetoptError:
         logging.error("Params are not defined well!")
-        logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
+        logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
         sys.exit(1)
 
     logging.info("START")
     conn = MySQLdb.connect(host="192.168.1.104", user="root", passwd="RooT", db="spider", charset="utf8")
     fetch_bilaterals_to_database(conn)
     conn.close()
-    logging.info("Stored " + str(g_stored_counter) + " New Person In Total!")
+    logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
     logging.info("END")
 
 
