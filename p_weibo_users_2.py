@@ -14,9 +14,15 @@ DEFAULT_FETCH_USERS_NUMBER = 10
 DEFAULT_ONE_PAGE_COUNT     = 10
 DEFAULT_CITY_CODE          = 11 # beijing
 
-APP_KEY                    = 3983759328
-APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
-CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
+# Using at uhquan.com
+# APP_KEY                    = 3983759328
+# APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
+# CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
+
+# Using at local
+APP_KEY                    = 1145738428
+APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
+CALLBACK_URL               = "http://76.116.64.145:8888/callback"
 
 class Mode:
     FROM_DB     = 1
@@ -58,7 +64,7 @@ class Logging:
         print(Logging.timestamp() + "  ERROR  [" + self.func_name  + "]: " + content)
 
 def get_E():
-    if (g_person_received <= 0 or g_stored_counter < 0)
+    if (g_person_received <= 0 or g_stored_counter < 0):
         return 0
     else:
         return str(float(g_stored_counter)/float(g_person_received)*100) + "%"
@@ -176,27 +182,25 @@ def do_auth(conn):
     return client
 
 
-def fetch_one_user_bilaterals(api, _uid):
+def fetch_one_user_followers(api, _uid):
     global g_person_received
-    logging = Logging.get_logger('fetch_one_user_bilaterals')
-    all_bilaterals = []
+    logging = Logging.get_logger('fetch_one_user_followers')
+    all_followers = []
     page_number = 1
     #logging.info("count = %s" % g_one_page_count)
     #logging.info("page = %s" % page_number)
     while not api.is_expires():
         try:
-            bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
+            followers = api.friendships__followers(uid=_uid, count=g_one_page_count, cursor=0, trim_status=0)
         except weibo.APIError as apierr:
             logging.error(str(apierr))
             logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
             time.sleep(300)
-            # sys.exit(1)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
             logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
             time.sleep(300)
-            # sys.exit(1)
         except urllib2.URLError as urlerr:
             logging.error(str(urlerr))
             if hasattr(urlerr,"reason"):
@@ -208,16 +212,15 @@ def fetch_one_user_bilaterals(api, _uid):
             time.sleep(300)
         else:
             break
-
-    bilaterals_number = len(bilaterals.users)
-    g_person_received += bilaterals_number
-    logging.info("Get %d bilaterals this time." % bilaterals_number)
-    all_bilaterals.extend(get_bilaterals_data(bilaterals, bilaterals_number))
-    while (bilaterals_number > 0):
-        page_number += 1
+    next_cursor     = followers.next_cursor
+    followers_number = len(followers.users)
+    g_person_received += followers_number
+    logging.info("Get %d followers this time." % followers_number)
+    all_followers.extend(get_followers_data(followers, followers_number))
+    while not 0 == next_cursor:
         while not api.is_expires():
             try:
-                bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
+                followers = api.friendships__followers(uid=_uid, count=g_one_page_count, cursor=next_cursor, trim_status=0)
             except weibo.APIError as apierr:
                 logging.error(str(apierr))
                 logging.info("I am tired, I am sleeping during the next 5 minutes...")
@@ -238,17 +241,15 @@ def fetch_one_user_bilaterals(api, _uid):
                 time.sleep(300)
             else:
                 break
-        # bilaterals = api.friendships__friends__bilateral(uid=_uid, count=g_one_page_count, page=page_number)
-        bilaterals_number = len(bilaterals.users)
-        g_person_received += bilaterals_number
-        logging.info("Get %d bilaterals this time." % bilaterals_number)
-        if (0 == bilaterals_number):
-            logging.info("Have got all bilaterals of the user: %s" % _uid)
-            break;
-        else:
-            all_bilaterals.extend(get_bilaterals_data(bilaterals, bilaterals_number))
-    #logging.info("all_bilaterals:  %s " % all_bilaterals)
-    return all_bilaterals
+        next_cursor       = followers.next_cursor
+        followers_number  = len(followers.users)
+        g_person_received += followers_number
+        logging.info("Get %d followers this time." % followers_number)
+        all_followers.extend(get_followers_data(followers, followers_number))
+    else:
+        logging.info("Have got all followers of the user: %s" % _uid)
+        return all_followers
+    
 
 
 def set_boolean(value):
@@ -258,24 +259,24 @@ def set_boolean(value):
         return "F"
 
 
-def get_bilaterals_data(bilaterals, number):
-    logging = Logging.get_logger('get_bilaterals_data')
+def get_followers_data(followers, number):
+    logging = Logging.get_logger('get_followers_data')
     data = []
     for index in range(0, number):
-        uid = bilaterals.users[index]['id']
+        uid = followers.users[index]['id']
         #logging.info("current uid = %s " % str(uid))
-        name = bilaterals.users[index]['name']
+        name = followers.users[index]['name']
         if ('' == name or None == name):
             continue
-        description = bilaterals.users[index]['description']
+        description = followers.users[index]['description']
         #logging.info(description)
-        url = bilaterals.users[index]['url']
-        gender = bilaterals.users[index]['gender']
+        url = followers.users[index]['url']
+        gender = followers.users[index]['gender']
         if ('m' == gender):
             gender = 'm'
         else:
             gender = 'f'		
-        location = bilaterals.users[index]['location']
+        location = followers.users[index]['location']
         loc = location.split(' ')
         if (2 == len(loc)):
             province = loc[0]
@@ -286,29 +287,29 @@ def get_bilaterals_data(bilaterals, number):
         else:
             logging.info("location info error!!")
 
-        followers_count    = bilaterals.users[index]['followers_count']
+        followers_count    = followers.users[index]['followers_count']
         followers_count    = str(followers_count)
-        friends_count      = bilaterals.users[index]['friends_count']
+        friends_count      = followers.users[index]['friends_count']
         friends_count      = str(friends_count)
-        statuses_count     = bilaterals.users[index]['statuses_count']
+        statuses_count     = followers.users[index]['statuses_count']
         statuses_count     = str(statuses_count)
-        favourites_count   = bilaterals.users[index]['favourites_count']
+        favourites_count   = followers.users[index]['favourites_count']
         favourites_count   = str(favourites_count)
-        created_at         = bilaterals.users[index]['created_at']
-        allow_all_act_msg  = bilaterals.users[index]['allow_all_act_msg']
+        created_at         = followers.users[index]['created_at']
+        allow_all_act_msg  = followers.users[index]['allow_all_act_msg']
         allow_all_act_msg  = set_boolean(allow_all_act_msg)
-        geo_enabled        = bilaterals.users[index]['geo_enabled']
+        geo_enabled        = followers.users[index]['geo_enabled']
         geo_enabled        = set_boolean(geo_enabled)
-        verified           = bilaterals.users[index]['verified']
+        verified           = followers.users[index]['verified']
         verified           = set_boolean(verified)
-        allow_all_comment  = bilaterals.users[index]['allow_all_comment']
+        allow_all_comment  = followers.users[index]['allow_all_comment']
         allow_all_comment  = set_boolean(allow_all_comment)
-        verified_reason    = bilaterals.users[index]['verified_reason']
-        bi_followers_count = bilaterals.users[index]['bi_followers_count']
+        verified_reason    = followers.users[index]['verified_reason']
+        bi_followers_count = followers.users[index]['bi_followers_count']
         bi_followers_count = str(bi_followers_count)
         data.append((uid,name,gender,province,city,url,description,followers_count,friends_count,statuses_count,favourites_count,created_at,allow_all_act_msg,geo_enabled,verified,allow_all_comment,verified_reason,bi_followers_count))
-    #logging.info("Get bilaterals data OK!! ====----====---->>> data: %s" % data)
-    #logging.info("Get bilaterals data OK!! ")
+    #logging.info("Get followers data OK!! ====----====---->>> data: %s" % data)
+    #logging.info("Get followers data OK!! ")
     return data
 
 
@@ -350,15 +351,15 @@ def reset_extended(conn, uid):
         return False
 
 
-def store_one_user_bilaterals(conn, bilaterals):
+def store_one_user_followers(conn, followers):
     global g_stored_counter
-    logging = Logging.get_logger('store_one_user_bilaterals')
+    logging = Logging.get_logger('store_one_user_followers')
     cursor = conn.cursor()
     #sql = "insert into temp_users (uid, nick_name) values(%s,%s)"
     sql = "insert into users (uid, nick_name, gender, province, city, url, description, followers_count, friends_count, statuses_count, favourites_count, created_at, allow_all_act_msg, geo_enabled, verified, allow_all_comment, verified_reason, bi_followers_count) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     logging.info("Storing ...")
     #logging.info(sql);
-    for b in bilaterals:
+    for b in followers:
         #logging.info("one of them b: " + str(b))
         if (not is_exist(conn, b[0])):
             #logging.info("This is a new user!!!")
@@ -474,32 +475,32 @@ def fetch_users(conn):
         return False
 
 
-def fetch_store_one_user_bilaterals(conn, api, uid):
-    logging = Logging.get_logger('fetch_store_one_user_bilaterals')
-    fetch_result = fetch_one_user_bilaterals(api, uid)
+def fetch_store_one_user_followers(conn, api, uid):
+    logging = Logging.get_logger('fetch_store_one_user_followers')
+    fetch_result = fetch_one_user_followers(api, uid)
     time.sleep(4)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
-        logging.error("ERROR Occured when fetching bilaterals!")
+        logging.error("ERROR Occured when fetching followers!")
         return False
     else:
-        logging.info("Fetch bilaterals of uid: %s OK!!" % uid)
-        if (False == store_one_user_bilaterals(conn, fetch_result)):
-            logging.error("ERROR Occured when storing bilaterals!")
+        logging.info("Fetch followers of uid: %s OK!!" % uid)
+        if (False == store_one_user_followers(conn, fetch_result)):
+            logging.error("ERROR Occured when storing followers!")
             return False
         else:
-            #logging.info("Store bilaterals of uid: %s OK!!" % uid)
+            #logging.info("Store followers of uid: %s OK!!" % uid)
             return True
 
 
-def fetch_store_bilaterals(conn, api, uids):
+def fetch_store_followers(conn, api, uids):
     global g_person_counter
-    logging = Logging.get_logger('fetch_store_bilaterals')
+    logging = Logging.get_logger('fetch_store_followers')
     #logging.info("uids: %s" % str(uids))
     for uid in uids:
         g_person_counter += 1
         logging.info("----------=-=-=-=-=-=-=-=-=-=========================--==-=-=-=-=->.>.>.>.>.>.>>>>>> person: %d START!!" % g_person_counter)
-        if (True == fetch_store_one_user_bilaterals(conn, api, uid[0])):
+        if (True == fetch_store_one_user_followers(conn, api, uid[0])):
             if(True == reset_extended(conn, uid[0])):
                 logging.info("Reset extended flag for the person: %d   uid: %s OK!" % (g_person_counter, uid[0]))
                 logging.info("-----------=-=-=-=-=-=-=-=-=-==========================---=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=>>>>>>>>>>> person: %d END!!" % g_person_counter)
@@ -512,8 +513,8 @@ def fetch_store_bilaterals(conn, api, uids):
     return True
 
 
-def fetch_bilaterals_to_database(conn):
-    logging = Logging.get_logger('fetch_bilaterals_to_database')
+def fetch_followers_to_database(conn):
+    logging = Logging.get_logger('fetch_followers_to_database')
     fetch_users_result = fetch_users(conn)
     if (False == fetch_users_result):
         logging.error("Error Occured When Fetching Users!!")
@@ -525,12 +526,12 @@ def fetch_bilaterals_to_database(conn):
     logging.info("Start to do Auth!!! ==============>>>>> ^_^")
     api = do_auth(conn)
     logging.info("Done Auth!!! ==============>>>>> ^_^")
-    #bilaterals = fetch_bilaterals(api, uids)
-    if (True == fetch_store_bilaterals(conn, api, uids)):
-        logging.info("Store All Bilaterals Successfully!!!")
+    #followers = fetch_followers(api, uids)
+    if (True == fetch_store_followers(conn, api, uids)):
+        logging.info("Store All Followers Successfully!!!")
         return True
     else:
-        logging.error("Store All Bilaterals Failed!!!")
+        logging.error("Store All Followers Failed!!!")
         return False
 
 
@@ -558,8 +559,8 @@ def main():
         sys.exit(1)
 
     logging.info("START")
-    conn = MySQLdb.connect(host="192.168.1.104", user="root", passwd="RooT", db="spider", charset="utf8")
-    fetch_bilaterals_to_database(conn)
+    conn = MySQLdb.connect(host="localhost", user="root", passwd="RooT", db="spider", charset="utf8")
+    fetch_followers_to_database(conn)
     conn.close()
     logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
     logging.info("END")
