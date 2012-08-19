@@ -58,7 +58,7 @@ class Logging:
         print(Logging.timestamp() + "  ERROR  [" + self.func_name  + "]: " + content)
 
 def get_E():
-    if (g_person_received <= 0 or g_stored_counter < 0)
+    if (g_person_received <= 0 or g_stored_counter < 0):
         return 0
     else:
         return str(float(g_stored_counter)/float(g_person_received)*100) + "%"
@@ -558,7 +558,7 @@ def main():
         sys.exit(1)
 
     logging.info("START")
-    conn = MySQLdb.connect(host="192.168.1.104", user="root", passwd="RooT", db="spider", charset="utf8")
+    conn = MySQLdb.connect(host="localhost", user="root", passwd="RooT", db="spider", charset="utf8")
     fetch_bilaterals_to_database(conn)
     conn.close()
     logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
