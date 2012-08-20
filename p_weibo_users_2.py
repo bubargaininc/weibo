@@ -219,7 +219,7 @@ def fetch_one_user_followers(api, _uid):
     logging.info("Get %d followers this time." % followers_number)
     all_followers.extend(get_followers_data(followers, followers_number))
     # for 200 limitation
-    next_cursor = 400
+    next_cursor = 200
     while not 0 == next_cursor:
         while not api.is_expires():
             try:
