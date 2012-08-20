@@ -55,13 +55,13 @@ class Logging:
         return time.strftime('%Y-%m-%d %X', time.localtime(time.time()))
 
     def info(self, content):
-        print(Logging.timestamp() + "  INFO   [" + self.func_name  + "]: " + content)
+        print(Logging.timestamp() + "  INFO   [" + self.func_name  + "]: " + content).encode('utf8')
 
     def warning(self, content):
-        print(Logging.timestamp() + " WARNING [" + self.func_name  + "]: " + content)
+        print(Logging.timestamp() + " WARNING [" + self.func_name  + "]: " + content).encode('utf8')
 
     def error(self, content):
-        print(Logging.timestamp() + "  ERROR  [" + self.func_name  + "]: " + content)
+        print(Logging.timestamp() + "  ERROR  [" + self.func_name  + "]: " + content).encode('utf8')
 
 def get_E():
     if (g_person_received <= 0 or g_stored_counter < 0):
@@ -219,7 +219,7 @@ def fetch_one_user_followers(api, _uid):
     logging.info("Get %d followers this time." % followers_number)
     all_followers.extend(get_followers_data(followers, followers_number))
     # for 200 limitation
-    next_cursor = 400
+    next_cursor = 200
     while not 0 == next_cursor:
         while not api.is_expires():
             try:
@@ -555,8 +555,8 @@ def main():
                 g_name = str(value)
                 logging(g_name)
                 g_mode = Mode.FROM_NAME
-        print(opts)
-        print(args)
+        #print(opts)
+        #print(args)
     except getopt.GetoptError:
         logging.error("Params are not defined well!")
         logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
