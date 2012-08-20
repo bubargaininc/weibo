@@ -15,14 +15,14 @@ DEFAULT_ONE_PAGE_COUNT     = 10
 DEFAULT_CITY_CODE          = 11 # beijing
 
 # Using at uhquan.com
-# APP_KEY                    = 3983759328
-# APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
-# CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
+APP_KEY                    = 3983759328
+APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
+CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
 
 # Using at local
-APP_KEY                    = 1145738428
-APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
-CALLBACK_URL               = "http://76.116.64.145:8888/callback"
+#APP_KEY                    = 1145738428
+#APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
+#CALLBACK_URL               = "http://76.116.64.145:8888/callback"
 
 class Mode:
     FROM_DB     = 1
@@ -249,7 +249,7 @@ def fetch_one_user_followers(api, _uid):
         g_person_received += followers_number
         logging.info("Get %d followers this time." % followers_number)
         all_followers.extend(get_followers_data(followers, followers_number))
-        if ()
+        
     else:
         logging.info("Have got all followers of the user: %s" % _uid)
         return all_followers
