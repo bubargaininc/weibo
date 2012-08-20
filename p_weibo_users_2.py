@@ -187,6 +187,7 @@ def fetch_one_user_followers(api, _uid):
     logging = Logging.get_logger('fetch_one_user_followers')
     all_followers = []
     page_number = 1
+    cursor_accumulation = 0
     #logging.info("count = %s" % g_one_page_count)
     #logging.info("page = %s" % page_number)
     while not api.is_expires():
@@ -217,6 +218,8 @@ def fetch_one_user_followers(api, _uid):
     g_person_received += followers_number
     logging.info("Get %d followers this time." % followers_number)
     all_followers.extend(get_followers_data(followers, followers_number))
+    # for 200 limitation
+    next_cursor = 400
     while not 0 == next_cursor:
         while not api.is_expires():
             try:
@@ -246,6 +249,7 @@ def fetch_one_user_followers(api, _uid):
         g_person_received += followers_number
         logging.info("Get %d followers this time." % followers_number)
         all_followers.extend(get_followers_data(followers, followers_number))
+        if ()
     else:
         logging.info("Have got all followers of the user: %s" % _uid)
         return all_followers
