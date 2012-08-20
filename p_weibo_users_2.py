@@ -55,16 +55,16 @@ class Logging:
         return time.strftime('%Y-%m-%d %X', time.localtime(time.time()))
 
     def info(self, content):
-        print(Logging.timestamp() + "  INFO   [" + self.func_name  + "]: " + content)
+        print(Logging.timestamp() + "  INFO   [" + self.func_name  + "]: " + content).encode('utf8')
 
     def warning(self, content):
-        print(Logging.timestamp() + " WARNING [" + self.func_name  + "]: " + content)
+        print(Logging.timestamp() + " WARNING [" + self.func_name  + "]: " + content).encode('utf8')
 
     def error(self, content):
-        print(Logging.timestamp() + "  ERROR  [" + self.func_name  + "]: " + content)
+        print(Logging.timestamp() + "  ERROR  [" + self.func_name  + "]: " + content).encode('utf8')
 
 def get_E():
-    if (g_person_received <= 0 or g_stored_counter < 0)
+    if (g_person_received <= 0 or g_stored_counter < 0):
         return 0
     else:
         return str(float(g_stored_counter)/float(g_person_received)*100) + "%"
@@ -556,15 +556,15 @@ def main():
                 g_name = str(value)
                 logging(g_name)
                 g_mode = Mode.FROM_NAME
-        print(opts)
-        print(args)
+        # print(opts)
+        # print(args)
     except getopt.GetoptError:
         logging.error("Params are not defined well!")
         logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
         sys.exit(1)
 
     logging.info("START")
-    conn = MySQLdb.connect(host="192.168.1.104", user="root", passwd="RooT", db="spider", charset="utf8")
+    conn = MySQLdb.connect(host="localhost", user="root", passwd="RooT", db="spider", charset="utf8")
     fetch_bilaterals_to_database(conn)
     conn.close()
     logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E())
