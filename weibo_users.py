@@ -9,6 +9,7 @@ import MySQLdb
 import time
 import weibo
 import urllib2
+import httplib
 
 DEFAULT_FETCH_USERS_NUMBER = 10
 DEFAULT_ONE_PAGE_COUNT     = 10
@@ -39,6 +40,8 @@ g_name               = ""
 g_person_counter     = 0
 g_person_received    = 0
 g_api_call_counter   = 0
+g_flag               = 0
+g_api  = ''
 
 
 class Logging:
@@ -107,26 +110,27 @@ def set_invalid(conn, verifier):
         logging.error("Set code invalid Failed!")
         return False
 
-def get_access_token()
-	tokens= ['2.00A1YbCDim8b2E487325fa560MJttB',\
-		'2.00veBuDDim8b2E2832acfdc5_EIRXE',\
-		'2.00_6x7CDim8b2E8729c251e67UnBMB',\
-		'2.00RKc2ADim8b2E7362f844ffXIm5IB',\
+def get_access_token():
+    global g_flag
+    tokens= ['2.00A1YbCDim8b2E487325fa560MJttB',\
+	    '2.00veBuDDim8b2E2832acfdc5_EIRXE',\
+        '2.00_6x7CDim8b2E8729c251e67UnBMB',
+        '2.00RKc2ADim8b2E7362f844ffXIm5IB',\
 		'2.00AReKdCim8b2E7a057b89be2qOh8E',\
 		'2.00JF42GDim8b2Eb34140ba67w_C4UE',\
 		'2.00Fo3V3Bim8b2E51c210b31c0rW4ly',\
 		'2.00xPQAoBim8b2E2cc3735ae3N65PAC']
-	flag += 1
-	if(flag > len(tokens)
-		flag = 0
-	print(Logging.timestamp() + 'get_access_token:' + tokens[flag]).encode('utf8')
-	return tokens[flag]
+    g_flag += 1
+    if(g_flag > len(tokens)):
+        g_flag = 0
+    print(Logging.timestamp() + 'get_access_token:' + tokens[g_flag]).encode('utf8')
+    return tokens[g_flag]
 
-def do_auth_new()
-	logging = Logging.get_logger('do_auth')
-	client - weibo.APIClient(app_key=APP_KEY,app_secret=APP_SECRET,redirect_uri=CALLBACK_URL)
-	client.set_access_token(get_access_token(), expires_in)
-
+def do_auth_new():
+    logging = Logging.get_logger('do_auth')
+    client = weibo.APIClient(app_key=APP_KEY,app_secret=APP_SECRET,redirect_uri=CALLBACK_URL)
+    client.set_access_token(get_access_token(), 99999)
+    return client
 
 def do_auth(conn):
     logging = Logging.get_logger('do_auth')
@@ -184,6 +188,9 @@ def do_auth(conn):
             logging.error(str(apierr))
             logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
             time.sleep(300)
+            if(g_api_call_counter >= 999):
+                g_api = do_auth_new()
+                g_api_call_counter = 0
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
@@ -199,6 +206,9 @@ def do_auth(conn):
             logging.error(str(apierr))
             logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
             time.sleep(300)
+            if(g_api_call_counter >= 999):
+                g_api = do_auth_new()
+                g_api_call_counter = 0
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
@@ -210,27 +220,33 @@ def do_auth(conn):
     return client
 
 
-def fetch_one_user_followers(api, _uid):
-    global g_person_received, g_api_call_counter
+def fetch_one_user_followers(_uid):
+    global g_api,g_person_received, g_api_call_counter
     logging = Logging.get_logger('fetch_one_user_followers')
     all_followers = []
     page_number = 1
     cursor_accumulation = 0
     #logging.info("count = %s" % g_one_page_count)
     #logging.info("page = %s" % page_number)
-    while not api.is_expires():
+    while not g_api.is_expires():
         try:
-            followers = api.friendships__followers(uid=_uid, count=g_one_page_count, cursor=0, trim_status=0)
+            followers = g_api.friendships__followers(uid=_uid, count=g_one_page_count, cursor=0, trim_status=0)
             g_api_call_counter += 1
+            if(g_api_call_counter >= 999):
+                g_api = do_auth_new()
+                g_api_call_counter = 0
         except weibo.APIError as apierr:
             logging.error(str(apierr))
             logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
-            time.sleep(300)
+            time.sleep(60)
+            if(g_api_call_counter >= 999):
+                g_api = do_auth_new()
+                g_api_call_counter = 0
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
             logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
-            time.sleep(300)
+            time.sleep(60)
         except urllib2.URLError as urlerr:
             logging.error(str(urlerr))
             if hasattr(urlerr,"reason"):
@@ -240,7 +256,7 @@ def fetch_one_user_followers(api, _uid):
                 logging.error("Error Reason: " + str(urlerr.read()))
             logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
             logging.info("I am tired, I am sleeping during the next 5 minutes...")
-            time.sleep(300)
+            time.sleep(60)
         except httplib.BadStatusLine as bslerr:
             logging.error("httplib.BadStatusLine ERROR!!!")
             logging.error("Error Code:" + str(bslerr.code))
@@ -257,15 +273,21 @@ def fetch_one_user_followers(api, _uid):
     # for 200 limitation
     next_cursor = 200
     while not 0 == next_cursor:
-        while not api.is_expires():
+        while not g_api.is_expires():
             try:
-                followers = api.friendships__followers(uid=_uid, count=g_one_page_count, cursor=next_cursor, trim_status=0)
+                followers = g_api.friendships__followers(uid=_uid, count=g_one_page_count, cursor=next_cursor, trim_status=0)
                 g_api_call_counter += 1
+                if(g_api_call_counter >=999):
+                    g_api = do_auth_new()
+                    g_api_call_counter = 0
             except weibo.APIError as apierr:
                 logging.error(str(apierr))
                 logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
                 logging.info("I am tired, I am sleeping during the next 5 minutes...")
                 time.sleep(300)
+                if(g_api_call_counter >= 999):
+                    g_api = do_auth_new()
+                    g_api_call_counter = 0
             except urllib2.HTTPError as httperr:
                 logging.error(str(httperr))
                 logging.error(str(httperr.read()))
@@ -528,9 +550,10 @@ def fetch_users(conn):
         return False
 
 
-def fetch_store_one_user_followers(conn, api, uid):
+def fetch_store_one_user_followers(conn, uid):
+    global g_api
     logging = Logging.get_logger('fetch_store_one_user_followers')
-    fetch_result = fetch_one_user_followers(api, uid)
+    fetch_result = fetch_one_user_followers(    uid)
     #time.sleep(4)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
@@ -551,14 +574,14 @@ def fetch_store_one_user_followers(conn, api, uid):
             return True
 
 
-def fetch_store_followers(conn, api, uids):
-    global g_person_counter
+def fetch_store_followers(conn, uids):
+    global g_person_counter,g_api
     logging = Logging.get_logger('fetch_store_followers')
     #logging.info("uids: %s" % str(uids))
     for uid in uids:
         g_person_counter += 1
         logging.info("----------=-=-=-=-=-=-=-=-=-=========================--==-=-=-=-=->.>.>.>.>.>.>>>>>> person: %d START!!" % g_person_counter)
-        if (True == fetch_store_one_user_followers(conn, api, uid[0])):
+        if (True == fetch_store_one_user_followers(conn, uid[0])):
             if(True == reset_extended(conn, uid[0])):
                 logging.info("Reset extended flag for the person: %d   uid: %s OK!" % (g_person_counter, uid[0]))
                 logging.info("-----------=-=-=-=-=-=-=-=-=-==========================---=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=>>>>>>>>>>> person: %d END!!" % g_person_counter)
@@ -572,6 +595,7 @@ def fetch_store_followers(conn, api, uids):
 
 
 def fetch_followers_to_database(conn):
+    global g_api
     logging = Logging.get_logger('fetch_followers_to_database')
     fetch_users_result = fetch_users(conn)
     if (False == fetch_users_result):
@@ -582,10 +606,12 @@ def fetch_followers_to_database(conn):
         logging.info("Fetch users OK!!")
         uids = fetch_users_result
     logging.info("Start to do Auth!!! ==============>>>>> ^_^")
-    api = do_auth(conn)
+    #api = do_auth(conn)
+    g_api = do_auth_new()
+    g_api_call_counter = 0
     logging.info("Done Auth!!! ==============>>>>> ^_^")
     #followers = fetch_followers(api, uids)
-    if (True == fetch_store_followers(conn, api, uids)):
+    if (True == fetch_store_followers(conn, uids)):
         logging.info("Store All Followers Successfully!!!")
         return True
     else:
@@ -617,7 +643,7 @@ def main():
         sys.exit(1)
 
     logging.info("START")
-    conn = MySQLdb.connect(host="localhost", user="root", passwd="RooT", db="spider", charset="utf8")
+    conn = MySQLdb.connect(host="www.uhquan.cn", user="root", passwd="RooT", db="spider", charset="utf8")
     fetch_followers_to_database(conn)
     conn.close()
     logging.info("Happily ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
