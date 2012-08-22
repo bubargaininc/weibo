@@ -15,14 +15,14 @@ DEFAULT_ONE_PAGE_COUNT     = 10
 DEFAULT_CITY_CODE          = 11 # beijing
 
 # Using at uhquan.com
-# APP_KEY                    = 3983759328
-# APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
-# CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
+APP_KEY                    = 3983759328
+APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
+CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
 
 # Using at local
-APP_KEY                    = 1145738428
-APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
-CALLBACK_URL               = "http://76.116.64.145:8888/callback"
+#APP_KEY                    = 1145738428
+#APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
+#CALLBACK_URL               = "http://76.116.64.145:8888/callback"
 
 class Mode:
     FROM_DB     = 1
@@ -506,7 +506,7 @@ def fetch_users(conn):
 def fetch_store_one_user_followers(conn, api, uid):
     logging = Logging.get_logger('fetch_store_one_user_followers')
     fetch_result = fetch_one_user_followers(api, uid)
-    time.sleep(4)
+    #time.sleep(4)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
         logging.error("ERROR Occured when fetching followers!")
