@@ -277,7 +277,7 @@ def fetch_one_user_followers(api, _uid):
     else:
         logging.info("Have got all followers of the user: %s" % _uid)
         return all_followers
-    
+
 
 
 def set_boolean(value):
@@ -303,7 +303,7 @@ def get_followers_data(followers, number):
         if ('m' == gender):
             gender = 'm'
         else:
-            gender = 'f'		
+            gender = 'f'
         location = followers.users[index]['location']
         loc = location.split(' ')
         if (2 == len(loc)):
@@ -379,10 +379,10 @@ def reset_extended(conn, uid):
         return False
 
 
-def store_one_user_followers(conn, followers):
+def store_one_user_followers(cursor, followers):
     global g_stored_counter
     logging = Logging.get_logger('store_one_user_followers')
-    cursor = conn.cursor()
+    # cursor = conn.cursor()
     #sql = "insert into temp_users (uid, nick_name) values(%s,%s)"
     sql = "insert into users (uid, nick_name, gender, province, city, url, description, followers_count, friends_count, statuses_count, favourites_count, created_at, allow_all_act_msg, geo_enabled, verified, allow_all_comment, verified_reason, bi_followers_count) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     logging.info("Storing ...")
@@ -395,19 +395,19 @@ def store_one_user_followers(conn, followers):
             #logging.info(str(param))
             #logging.info(param[6])
             n = cursor.execute(sql, param)
-	    #daniel add one line here	
-	    cursor.execute("commit") 
+	    #daniel add one line here
+	    #cursor.execute("commit")
             if (1 == n):
                 #logging.info("Store bilateral uid = %s, name= %s OK!!" % (b[0], b[1]))
-                g_stored_counter += 1 
+                g_stored_counter += 1
             else:
                 logging.error("Error Occured when store the user of uid = %s, name= %s +++=================------>>>>>>>>>>><<<<<<<<<<<------===============" % (b[0], b[1]))
-                cursor.close()
+                # cursor.close()
                 return False
         else:
             pass
             #logging.info("This user has been stored!!! uid = %s, name = %s" % (b[0], b[1]))
-    cursor.close()
+    # cursor.close()
     logging.info("Storing Accomplished!")
     return True
 
@@ -513,11 +513,16 @@ def fetch_store_one_user_followers(conn, api, uid):
         return False
     else:
         logging.info("Fetch followers of uid: %s OK!!" % uid)
-        if (False == store_one_user_followers(conn, fetch_result)):
+        cursor = conn.cursor()
+        cursor.execute("SET AUTOCOMMIT = 0")
+        if (False == store_one_user_followers(cursor, fetch_result)):
             logging.error("ERROR Occured when storing followers!")
+            cursor.close()
             return False
         else:
             #logging.info("Store followers of uid: %s OK!!" % uid)
+            cursor.execute("commit")
+            cursor.close()
             return True
 
 
