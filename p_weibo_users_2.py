@@ -506,7 +506,7 @@ def fetch_users(conn):
 def fetch_store_one_user_followers(conn, api, uid):
     logging = Logging.get_logger('fetch_store_one_user_followers')
     fetch_result = fetch_one_user_followers(api, uid)
-    time.sleep(4)
+    #time.sleep(4)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
         logging.error("ERROR Occured when fetching followers!")
