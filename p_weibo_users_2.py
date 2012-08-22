@@ -9,6 +9,7 @@ import MySQLdb
 import time
 import weibo
 import urllib2
+import httplib
 
 DEFAULT_FETCH_USERS_NUMBER = 10
 DEFAULT_ONE_PAGE_COUNT     = 10
