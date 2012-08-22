@@ -341,24 +341,24 @@ def get_followers_data(followers, number):
     return data
 
 
-def is_exist(conn, uid):
+def is_exist(cursor, uid):
     logging = Logging.get_logger('is_exist')
-    cursor = conn.cursor()
+    # cursor = conn.cursor()
     sql = "select id from users where uid = %s"
     param = uid
     n = cursor.execute(sql, param)
     if (0 == n):
         #logging.info("The user does not exist in users, uid = %s" % uid)
-        cursor.close()
+        # cursor.close()
         return False
     elif (1 == n):
         #logging.info("Exist in users, uid = %s" % uid)
-        cursor.close()
+        # cursor.close()
         return True
     else:
         logging.error("Error Occured when check the uid = %s in users" % uid)
-        cursor.close()
-        conn.close()
+        # cursor.close()
+        # conn.close()
         logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
         sys.exit(1)
 
@@ -389,7 +389,7 @@ def store_one_user_followers(cursor, followers):
     #logging.info(sql);
     for b in followers:
         #logging.info("one of them b: " + str(b))
-        if (not is_exist(conn, b[0])):
+        if (not is_exist(cursor, b[0])):
             #logging.info("This is a new user!!!")
             param = b
             #logging.info(str(param))
