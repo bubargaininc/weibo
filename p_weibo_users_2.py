@@ -249,8 +249,12 @@ def fetch_one_user_followers(api, _uid):
                 logging.error(str(httperr))
                 logging.error(str(httperr.read()))
                 logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
-                logging.info("I am tired, I am sleeping during the next 5 minutes...")
-                time.sleep(300)
+                if ("[Errno 110] Connection timed out" == str(httperr.read())):
+                    logging.info("I am a little tired, I am gonna have a snap during the next 5 seconds...")
+                    time.sleep(5)
+                else:
+                    logging.info("I am tired, I am sleeping during the next 5 minutes...")
+                    time.sleep(300)
             except urllib2.URLError as urlerr:
                 logging.error(str(urlerr))
                 if hasattr(urlerr,"reason"):
