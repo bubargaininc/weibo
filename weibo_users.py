@@ -232,20 +232,21 @@ def fetch_one_user_followers(_uid):
         try:
             followers = g_api.friendships__followers(uid=_uid, count=g_one_page_count, cursor=0, trim_status=0)
             g_api_call_counter += 1
-            if(g_api_call_counter >= 999):
-                g_api = do_auth_new()
-                g_api_call_counter = 0
+            
         except weibo.APIError as apierr:
             logging.error(str(apierr))
-            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
-            time.sleep(60)
-            if(g_api_call_counter >= 999):
+            logging.info("access_token changed:")
+	    if(g_api_call_counter >= 999):
                 g_api = do_auth_new()
                 g_api_call_counter = 0
+            time.sleep(60)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
-            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+            logging.info("access_token changed,too:")
+	    if(g_api_call_counter >= 999):
+                g_api = do_auth_new()
+                g_api_call_counter = 0
             time.sleep(60)
         except urllib2.URLError as urlerr:
             logging.error(str(urlerr))
@@ -255,8 +256,11 @@ def fetch_one_user_followers(_uid):
                 logging.error("Error Code:" + str(urlerr.code))
                 logging.error("Error Reason: " + str(urlerr.read()))
             logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
-            logging.info("I am tired, I am sleeping during the next 5 minutes...")
-            time.sleep(60)
+            logging.info("I am tired, I am sleeping during the next 30s...")
+            time.sleep(30)
+	    if(g_api_call_counter >= 999):
+                g_api = do_auth_new()
+                g_api_call_counter = 0
         except httplib.BadStatusLine as bslerr:
             logging.error("httplib.BadStatusLine ERROR!!!")
             logging.error("Error Code:" + str(bslerr.code))
@@ -284,7 +288,10 @@ def fetch_one_user_followers(_uid):
                 logging.error(str(apierr))
                 logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
                 logging.info("I am tired, I am sleeping during the next 5 minutes...")
-                time.sleep(300)
+                time.sleep(60)
+		if(g_api_call_counter >= 999):
+               		g_api = do_auth_new()
+               		g_api_call_counter = 0
                 if(g_api_call_counter >= 999):
                     g_api = do_auth_new()
                     g_api_call_counter = 0
@@ -643,7 +650,7 @@ def main():
         sys.exit(1)
 
     logging.info("START")
-    conn = MySQLdb.connect(host="www.uhquan.cn", user="root", passwd="RooT", db="spider", charset="utf8")
+    conn = MySQLdb.connect(host="localhost", user="root", passwd="RooT", db="spider", charset="utf8")
     fetch_followers_to_database(conn)
     conn.close()
     logging.info("Happily ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
