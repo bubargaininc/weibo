@@ -9,20 +9,21 @@ import MySQLdb
 import time
 import weibo
 import urllib2
+import httplib
 
 DEFAULT_FETCH_USERS_NUMBER = 10
 DEFAULT_ONE_PAGE_COUNT     = 10
 DEFAULT_CITY_CODE          = 11 # beijing
 
 # Using at uhquan.com
-# APP_KEY                    = 3983759328
-# APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
-# CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
+APP_KEY                    = 3983759328
+APP_SECRET                 = """36d1bd885bb6553c201b50fc9912b756"""
+CALLBACK_URL               = "http://www.uhquan.com:8888/callback"
 
 # Using at local
-APP_KEY                    = 1145738428
-APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
-CALLBACK_URL               = "http://76.116.64.145:8888/callback"
+#APP_KEY                    = 1145738428
+#APP_SECRET                 = """275b151558a7007b0c8dab0060588f42"""
+#CALLBACK_URL               = "http://76.116.64.145:8888/callback"
 
 class Mode:
     FROM_DB     = 1
@@ -249,8 +250,12 @@ def fetch_one_user_followers(api, _uid):
                 logging.error(str(httperr))
                 logging.error(str(httperr.read()))
                 logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
-                logging.info("I am tired, I am sleeping during the next 5 minutes...")
-                time.sleep(300)
+                if ("[Errno 110] Connection timed out" == str(httperr.read())):
+                    logging.info("I am a little tired, I am gonna have a snap during the next 5 seconds...")
+                    time.sleep(5)
+                else:
+                    logging.info("I am tired, I am sleeping during the next 5 minutes...")
+                    time.sleep(300)
             except urllib2.URLError as urlerr:
                 logging.error(str(urlerr))
                 if hasattr(urlerr,"reason"):
@@ -277,7 +282,7 @@ def fetch_one_user_followers(api, _uid):
     else:
         logging.info("Have got all followers of the user: %s" % _uid)
         return all_followers
-    
+
 
 
 def set_boolean(value):
@@ -303,7 +308,7 @@ def get_followers_data(followers, number):
         if ('m' == gender):
             gender = 'm'
         else:
-            gender = 'f'		
+            gender = 'f'
         location = followers.users[index]['location']
         loc = location.split(' ')
         if (2 == len(loc)):
@@ -341,24 +346,24 @@ def get_followers_data(followers, number):
     return data
 
 
-def is_exist(conn, uid):
+def is_exist(cursor, uid):
     logging = Logging.get_logger('is_exist')
-    cursor = conn.cursor()
+    # cursor = conn.cursor()
     sql = "select id from users where uid = %s"
     param = uid
     n = cursor.execute(sql, param)
     if (0 == n):
         #logging.info("The user does not exist in users, uid = %s" % uid)
-        cursor.close()
+        # cursor.close()
         return False
     elif (1 == n):
         #logging.info("Exist in users, uid = %s" % uid)
-        cursor.close()
+        # cursor.close()
         return True
     else:
         logging.error("Error Occured when check the uid = %s in users" % uid)
-        cursor.close()
-        conn.close()
+        # cursor.close()
+        # conn.close()
         logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
         sys.exit(1)
 
@@ -379,35 +384,35 @@ def reset_extended(conn, uid):
         return False
 
 
-def store_one_user_followers(conn, followers):
+def store_one_user_followers(cursor, followers):
     global g_stored_counter
     logging = Logging.get_logger('store_one_user_followers')
-    cursor = conn.cursor()
+    # cursor = conn.cursor()
     #sql = "insert into temp_users (uid, nick_name) values(%s,%s)"
     sql = "insert into users (uid, nick_name, gender, province, city, url, description, followers_count, friends_count, statuses_count, favourites_count, created_at, allow_all_act_msg, geo_enabled, verified, allow_all_comment, verified_reason, bi_followers_count) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     logging.info("Storing ...")
     #logging.info(sql);
     for b in followers:
         #logging.info("one of them b: " + str(b))
-        if (not is_exist(conn, b[0])):
+        if (not is_exist(cursor, b[0])):
             #logging.info("This is a new user!!!")
             param = b
             #logging.info(str(param))
             #logging.info(param[6])
             n = cursor.execute(sql, param)
-	    #daniel add one line here	
-	    cursor.execute("commit") 
+	    #daniel add one line here
+	    #cursor.execute("commit")
             if (1 == n):
                 #logging.info("Store bilateral uid = %s, name= %s OK!!" % (b[0], b[1]))
-                g_stored_counter += 1 
+                g_stored_counter += 1
             else:
                 logging.error("Error Occured when store the user of uid = %s, name= %s +++=================------>>>>>>>>>>><<<<<<<<<<<------===============" % (b[0], b[1]))
-                cursor.close()
+                # cursor.close()
                 return False
         else:
             pass
             #logging.info("This user has been stored!!! uid = %s, name = %s" % (b[0], b[1]))
-    cursor.close()
+    # cursor.close()
     logging.info("Storing Accomplished!")
     return True
 
@@ -506,18 +511,23 @@ def fetch_users(conn):
 def fetch_store_one_user_followers(conn, api, uid):
     logging = Logging.get_logger('fetch_store_one_user_followers')
     fetch_result = fetch_one_user_followers(api, uid)
-    time.sleep(4)
+    #time.sleep(4)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
         logging.error("ERROR Occured when fetching followers!")
         return False
     else:
         logging.info("Fetch followers of uid: %s OK!!" % uid)
-        if (False == store_one_user_followers(conn, fetch_result)):
+        cursor = conn.cursor()
+        cursor.execute("SET AUTOCOMMIT = 0")
+        if (False == store_one_user_followers(cursor, fetch_result)):
             logging.error("ERROR Occured when storing followers!")
+            cursor.close()
             return False
         else:
             #logging.info("Store followers of uid: %s OK!!" % uid)
+            cursor.execute("commit")
+            cursor.close()
             return True
 
 
