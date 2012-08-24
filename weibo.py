@@ -193,8 +193,8 @@ class APIClient(object):
         return r
 
     def is_expires(self):
-        #return not self.access_token or time.time() > self.expires
-        return not self.access_token
+        return not self.access_token 
+        #or time.time() > self.expires
 
     def __getattr__(self, attr):
         return getattr(self.get, attr)
