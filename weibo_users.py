@@ -129,7 +129,8 @@ def get_access_token():
 def do_auth_new():
     logging = Logging.get_logger('do_auth')
     client = weibo.APIClient(app_key=APP_KEY,app_secret=APP_SECRET,redirect_uri=CALLBACK_URL)
-    client.set_access_token(get_access_token(), 99999)
+    access_token = get_access_token()
+    client.set_access_token(access_token, 99999)
     return client
 
 def do_auth(conn):
@@ -205,9 +206,10 @@ def do_auth(conn):
         except weibo.APIError as apierr:
             logging.error(str(apierr))
             logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
-	    logging.info("token changed here!")
+	   
             time.sleep(60)
             g_api = do_auth_new()
+	    logging.info("token changed here!"+g_api)
             g_api_call_counter = 0
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
@@ -235,17 +237,17 @@ def fetch_one_user_followers(_uid):
             
         except weibo.APIError as apierr:
             logging.error(str(apierr))
-            logging.info("access_token changed (3):")
+            
             g_api = do_auth_new()
+            logging.info("access_token changed (3):"+g_api)
             g_api_call_counter = 0
             time.sleep(60)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
-            logging.error(str(httperr.read()))
-            logging.info("access_token changed,too:")
-	    if(g_api_call_counter >= 999):
-                g_api = do_auth_new()
-                g_api_call_counter = 0
+            logging.error(str(httperr.read()))      
+            g_api = do_auth_new()
+            logging.info("access_token changed,too:"+g_api)
+            g_api_call_counter = 0
             time.sleep(60)
         except urllib2.URLError as urlerr:
             logging.error(str(urlerr))
@@ -268,8 +270,8 @@ def fetch_one_user_followers(_uid):
             time.sleep(5)
 	except Exception as e:
 		logging.error("other exception happened here!")
-		logging.error("Error Code:" + str(bslerr.code))
-		logging.error("Error Reason: " + str(urlerr.read()))
+		logging.error("Error Code:" + str(e.code))
+		logging.error("Error Reason: " + str(e.read()))
 		logging.info("let 's continue. Come on!")
         else:
             break
@@ -305,8 +307,11 @@ def fetch_one_user_followers(_uid):
                     logging.info("I am a little tired, I am gonna have a snap during the next 5 seconds...")
                     time.sleep(5)
                 else:
-                    logging.info("I am tired, I am sleeping during the next 5 minutes...")
-                    time.sleep(300)
+		    logging.error(str(httperr.read()))
+                    logging.info("I am tired, I am sleeping 60s and change an access_token...")
+                    g_api = do_auth_new()
+                    g_api_call_counter = 0
+		    time.sleep(60)
             except urllib2.URLError as urlerr:
                 logging.error(str(urlerr))
                 if hasattr(urlerr,"reason"):
@@ -325,8 +330,8 @@ def fetch_one_user_followers(_uid):
                 time.sleep(5)
 	    except Exception as e:
 		logging.error("other exception happened here!(2)")
-		logging.error("Error Code:" + str(bslerr.code))
-		logging.error("Error Reason: " + str(urlerr.read()))
+		logging.error("Error Code:" + str(e.code))
+		logging.error("Error Reason: " + str(e.read()))
 		logging.info("let 's continue. Come on!")
             else:
 		break
@@ -567,7 +572,7 @@ def fetch_users(conn):
 def fetch_store_one_user_followers(conn, uid):
     global g_api
     logging = Logging.get_logger('fetch_store_one_user_followers')
-    fetch_result = fetch_one_user_followers(    uid)
+    fetch_result = fetch_one_user_followers(uid)
     #time.sleep(4)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
@@ -609,28 +614,29 @@ def fetch_store_followers(conn, uids):
 
 
 def fetch_followers_to_database(conn):
-    global g_api
-    logging = Logging.get_logger('fetch_followers_to_database')
-    fetch_users_result = fetch_users(conn)
-    if (False == fetch_users_result):
-        logging.error("Error Occured When Fetching Users!!")
-        logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
-        sys.exit(1)
-    else:
-        logging.info("Fetch users OK!!")
-        uids = fetch_users_result
-    logging.info("Start to do Auth!!! ==============>>>>> ^_^")
-    #api = do_auth(conn)
-    g_api = do_auth_new()
-    g_api_call_counter = 0
-    logging.info("Done Auth!!! ==============>>>>> ^_^")
-    #followers = fetch_followers(api, uids)
-    if (True == fetch_store_followers(conn, uids)):
-        logging.info("Store All Followers Successfully!!!")
-        return True
-    else:
-        logging.error("Store All Followers Failed!!!")
-        return False
+	    global g_api
+	    logging = Logging.get_logger('fetch_followers_to_database')
+	    fetch_users_result = fetch_users(conn)
+	    if (False == fetch_users_result):
+		logging.error("Error Occured When Fetching Users!!")
+		logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+		sys.exit(1)
+	    else:
+		logging.info("Fetch users OK!!")
+		uids = fetch_users_result
+	    logging.info("Start to do Auth!!! ==============>>>>> ^_^")
+	    #api = do_auth(conn)
+	    g_api = do_auth_new()
+	    g_api_call_counter = 0
+	    logging.info("Done Auth!!! ==============>>>>> ^_^")
+	    #followers = fetch_followers(api, uids)
+	    if (True == fetch_store_followers(conn, uids)):
+		logging.info("Store All Followers Successfully!!!")
+		return True
+	    else:
+		logging.error("Store All Followers Failed!!!")
+		return False
+ 
 
 
 def main():
