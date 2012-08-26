@@ -202,11 +202,11 @@ def comments_create(conn, api, send_info):
                 try:
                     logging.info("Sending mid => " + str(si[1]) + "   content => " + str(si[2]))
                     mid = si[1]
-                    comment = str(si[2]) + "  " + APP_ADDRESS
+                    comment = "u'" + str(si[2]) + "  " + APP_ADDRESS + "'"
                     logging.info(mid)
                     logging.info(comment)
-                    logging.info(COMMENT_ORI)
-                    comm_res = api.post.comments__create(comment=comment, id=mid, comment_ori=COMMENT_ORI)
+                    logging.info(str(COMMENT_ORI))
+                    comm_res = api.post.comments__create(comment=u'lalala ', id=mid, comment_ori=COMMENT_ORI)
                     store_comm_res(conn, comm_res, si[0])
                 except weibo.APIError as apierr:
                     logging.error(str(apierr))

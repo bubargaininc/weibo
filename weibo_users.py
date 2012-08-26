@@ -567,7 +567,7 @@ def fetch_users(conn):
 def fetch_store_one_user_followers(conn, uid):
     global g_api
     logging = Logging.get_logger('fetch_store_one_user_followers')
-    fetch_result = fetch_one_user_followers(    uid)
+    fetch_result = fetch_one_user_followers(uid)
     #time.sleep(4)
     #logging.info("[FETCH_STORE_ONE]: fetch_result: %s" % fetch_result)
     if (False == fetch_result):
