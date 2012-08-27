@@ -187,7 +187,7 @@ def do_auth(conn):
             uid = client.get.account__get_uid().uid
         except weibo.APIError as apierr:
             logging.error(str(apierr))
-            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
+            #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
             time.sleep(300)
            
             g_api = do_auth_new()
@@ -195,7 +195,7 @@ def do_auth(conn):
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
-            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
+            #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
             time.sleep(300)
         else:
             break
@@ -205,7 +205,7 @@ def do_auth(conn):
             u = client.get.users__show(uid=uid)
         except weibo.APIError as apierr:
             logging.error(str(apierr))
-            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
+            #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
 	   
             time.sleep(60)
             g_api = do_auth_new()
@@ -214,7 +214,7 @@ def do_auth(conn):
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))
-            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
+            #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; apiE => " + get_apiE())
             time.sleep(300)
         else:
             logging.info("We are uing API from account: [uid = %s, name = %s]" % (u.id, u.screen_name))
@@ -239,16 +239,16 @@ def fetch_one_user_followers(_uid):
             logging.error(str(apierr))
             
             g_api = do_auth_new()
-            logging.info("access_token changed (3):"+g_api)
+            logging.info("access_token changed (3):")
             g_api_call_counter = 0
             time.sleep(60)
         except urllib2.HTTPError as httperr:
             logging.error(str(httperr))
             logging.error(str(httperr.read()))      
             g_api = do_auth_new()
-            logging.info("access_token changed,too:"+g_api)
+            logging.info("access_token changed,too:")
             g_api_call_counter = 0
-            time.sleep(60)
+            time.sleep(10)
         except urllib2.URLError as urlerr:
             logging.error(str(urlerr))
             if hasattr(urlerr,"reason"):
@@ -256,7 +256,7 @@ def fetch_one_user_followers(_uid):
             elif hasattr(urlerr,"code"):
                 logging.error("Error Code:" + str(urlerr.code))
                 logging.error("Error Reason: " + str(urlerr.read()))
-            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+            #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
             logging.info("I am tired, I am sleeping during the next 30s...")
             time.sleep(30)
 	    if(g_api_call_counter >= 999):
@@ -266,7 +266,7 @@ def fetch_one_user_followers(_uid):
             logging.error("httplib.BadStatusLine ERROR!!!")
             logging.error("Error Code:" + str(bslerr.code))
             logging.error("Error Reason: " + str(urlerr.read()))
-            logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+            #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
             time.sleep(5)
 	except Exception as e:
 		logging.error("other exception happened here!")
@@ -292,7 +292,7 @@ def fetch_one_user_followers(_uid):
                     g_api_call_counter = 0
             except weibo.APIError as apierr:
                 logging.error(str(apierr))
-                logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+                #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
                 logging.info("I am tired, I am sleeping during the next 61s...")
 		logging.info("I will change access_token here!")
                 time.sleep(60)
@@ -302,7 +302,7 @@ def fetch_one_user_followers(_uid):
             except urllib2.HTTPError as httperr:
                 logging.error(str(httperr))
                 logging.error(str(httperr.read()))
-                logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+                #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
                 if ("[Errno 110] Connection timed out" == str(httperr.read())):
                     logging.info("I am a little tired, I am gonna have a snap during the next 5 seconds...")
                     time.sleep(5)
@@ -319,19 +319,17 @@ def fetch_one_user_followers(_uid):
                 elif hasattr(urlerr,"code"):
                     logging.error("Error Code:" + str(urlerr.code))
                     logging.error("Error Reason: " + str(urlerr.read()))
-                logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+                #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
                 logging.info("I am tired, I am sleeping during the next 2 minutes...")
                 time.sleep(120)
             except httplib.BadStatusLine as bslerr:
                 logging.error("httplib.BadStatusLine ERROR!!!")
                 logging.error("Error Code:" + str(bslerr.code))
                 logging.error("Error Reason: " + str(urlerr.read()))
-                logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+                #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
                 time.sleep(5)
 	    except Exception as e:
 		logging.error("other exception happened here!(2)")
-		logging.error("Error Code:" + str(e.code))
-		logging.error("Error Reason: " + str(e.read()))
 		logging.info("let 's continue. Come on!")
             else:
 		break
@@ -425,7 +423,7 @@ def is_exist(cursor, uid):
         logging.error("Error Occured when check the uid = %s in users" % uid)
         # cursor.close()
         # conn.close()
-        logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+        #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
         sys.exit(1)
 
 
@@ -619,7 +617,7 @@ def fetch_followers_to_database(conn):
 	    fetch_users_result = fetch_users(conn)
 	    if (False == fetch_users_result):
 		logging.error("Error Occured When Fetching Users!!")
-		logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+		#logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
 		sys.exit(1)
 	    else:
 		logging.info("Fetch users OK!!")
@@ -659,14 +657,14 @@ def main():
         #print(args)
     except getopt.GetoptError:
         logging.error("Params are not defined well!")
-        logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+        #logging.info("So Far, ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
         sys.exit(1)
 
     logging.info("START")
     conn = MySQLdb.connect(host="localhost", user="root", passwd="RooT", db="spider", charset="utf8")
     fetch_followers_to_database(conn)
     conn.close()
-    logging.info("Happily ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
+    #logging.info("Happily ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
     logging.info("END")
 
 
