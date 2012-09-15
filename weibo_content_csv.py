@@ -7,7 +7,7 @@ from weibopy.auth import OAuthHandler
 from weibopy.api import API
 from weibopy.error import WeibopError
 import webbrowser
-import pymysql
+import MySQLdb
 import time
 import csv
 import codecs
@@ -310,7 +310,7 @@ def main():
         sys.exit(1)
 
     logging.info("START")
-    conn = pymysql.connect(host="localhost", user="root", passwd="bubargain2012", db="spider", charset="utf8")
+    conn = MySQLdb.Connect(host="192.168.1.104", user="root", passwd="RooT", db="spider", charset="utf8")
     fetch_statuses_to_database(conn)
     conn.close()
     logging.info("Stored " + str(g_stored_counter) + " New Statuses In Total!")
