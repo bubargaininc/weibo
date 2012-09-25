@@ -112,14 +112,14 @@ def set_invalid(conn, verifier):
 
 def get_access_token():
     global g_flag
-    tokens= ['2.00A1YbCDim8b2E487325fa560MJttB',\
-	    '2.00veBuDDim8b2E2832acfdc5_EIRXE',\
-        '2.00_6x7CDim8b2E8729c251e67UnBMB',
-        '2.00RKc2ADim8b2E7362f844ffXIm5IB',\
-		'2.00AReKdCim8b2E7a057b89be2qOh8E',\
-		'2.00JF42GDim8b2Eb34140ba67w_C4UE',\
-		'2.00Fo3V3Bim8b2E51c210b31c0rW4ly',\
-		'2.00xPQAoBim8b2E2cc3735ae3N65PAC']
+    tokens= ['2.00A1YbCDn7vL1D27eab6109c2IDIOB',\
+	    '2.00RKc2ADn7vL1Dbd996c0b1e0u4AEh',\
+        '2.00veBuDDn7vL1Db9850b444e_7k7QB',\
+        '2.00_6x7CDn7vL1D7bea246f41pLshRB',\
+		'2.00Fo3V3Bn7vL1Db0121c1d590kx4pB',\
+		'2.00JF42GDn7vL1Dd9ca655ea20REIE4',\
+		'2.00AReKdCn7vL1Dd1e6d2b0203eUxmC',\
+		'2.00xPQAoBn7vL1Df9b9c89b44MFovhC']
     g_flag += 1
     if(g_flag >= len(tokens)):
         g_flag = 0
@@ -270,8 +270,9 @@ def fetch_one_user_followers(_uid):
             time.sleep(5)
 	except Exception as e:
 		logging.error("other exception happened here!")
-		logging.error("Error Code:" + str(e.code))
-		logging.error("Error Reason: " + str(e.read()))
+		#logging.error("Error Code:" + str(e.code))
+		#logging.error("Error Reason: " + str(e.read()))
+                logging.error("Error Reason: I don't care") 
 		logging.info("let 's continue. Come on!")
         else:
             break
