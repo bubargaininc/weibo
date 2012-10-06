@@ -7,11 +7,12 @@ import webbrowser
 import MySQLdb
 import time
 import weibo
+import urllib
 import urllib2
 
 
 # Database config
-db_host     = "localhost"
+db_host     = "www.uhquan.com"
 db_username = "root"
 db_password = "RooT"
 db_port     = 3306
@@ -202,7 +203,7 @@ def comments_create(conn, api, send_info):
                 try:
                     logging.info("Sending mid => " + str(si[1]) + "   content => " + str(si[2]))
                     mid = si[1]
-                    comment = str(si[2]) + "  " + APP_ADDRESS
+                    comment =str(si[2]) + "  " + APP_ADDRESS;
                     logging.info(mid)
                     logging.info(comment)
                     logging.info(COMMENT_ORI)
