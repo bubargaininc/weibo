@@ -598,7 +598,11 @@ def main():
 
     logging.info("START")
     conn = MySQLdb.connect(host="localhost", user="root", passwd="RooT", db="spider", charset="utf8")
+<<<<<<< HEAD
     fetch_followers_to_database(conn)
+=======
+    fetch_bilaterals_to_database(conn)
+>>>>>>> c1aaace8bf14c40b7788d118b186d862c969222c
     conn.close()
     logging.info("Happily ---> Stored New Person: " + str(g_stored_counter) + "; Received Person: " + str(g_person_received) + "; E => " + get_E() + "; API Call: " + str(g_api_call_counter) + "; apiE => " + get_apiE())
     logging.info("END")
